@@ -8,7 +8,7 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 - **WebSocket** for live updates
 - **Real-time bidding** with instant notifications
 - **Auction management** with automatic expiration
-- **H2 Database** for development (with web console)
+- **SQL Server** database with JDBC connectivity
 - **Sample data** initialization
 
 ## Technology Stack
@@ -17,7 +17,7 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 - Spring Boot 3.2.0
 - Spring WebSocket
 - Spring Data JPA
-- H2 Database
+- SQL Server
 - Maven
 
 ## Getting Started
@@ -26,6 +26,9 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 
 - Java 17 or higher
 - Maven 3.6 or higher
+- SQL Server (2019 or later) running on localhost:1433
+- Database: `SampleDB` (will be created automatically)
+- SQL Server credentials: `sa` / `YourStrong@Passw0rd`
 
 ### Running the Application
 
@@ -42,10 +45,10 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 
 - **REST API**: `http://localhost:8080/api/`
 - **Web Interface**: `http://localhost:8080/`
-- **H2 Database Console**: `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:mem:testdb`
+- **Database**: SQL Server on `localhost:1433`
+  - Database Name: `SampleDB`
   - Username: `sa`
-  - Password: `password`
+  - Password: `YourStrong@Passw0rd`
 
 ## API Endpoints
 
@@ -106,7 +109,7 @@ The application automatically creates sample auction items on startup:
 
 ## Configuration
 
-The application uses H2 in-memory database by default. To use a different database, update `application.properties`:
+The application is configured to use SQL Server by default. To use a different database, update `application.properties`:
 
 ```properties
 # Example for MySQL
@@ -114,6 +117,7 @@ spring.datasource.url=jdbc:mysql://localhost:3306/bidding_db
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
 ```
 
 ## Development
