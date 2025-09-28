@@ -9,6 +9,7 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 - **Real-time bidding** with instant notifications
 - **Auction management** with automatic expiration
 - **SQL Server** database with JDBC connectivity
+- **Swagger/OpenAPI** documentation
 - **Sample data** initialization
 
 ## Technology Stack
@@ -18,6 +19,7 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 - Spring WebSocket
 - Spring Data JPA
 - SQL Server
+- Swagger/OpenAPI 3
 - Maven
 
 ## Getting Started
@@ -61,6 +63,8 @@ docker-compose up -d
 
 - **REST API**: `http://localhost:8080/api/`
 - **Web Interface**: `http://localhost:8080/`
+- **API Documentation**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON**: `http://localhost:8080/api-docs`
 - **Database**: SQL Server on `localhost:1433`
   - Database Name: `SampleDB`
   - Username: `sa`

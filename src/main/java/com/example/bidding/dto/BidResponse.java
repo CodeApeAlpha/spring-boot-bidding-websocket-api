@@ -1,15 +1,28 @@
 package com.example.bidding.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Schema(description = "Response object containing bid information")
 public class BidResponse {
     
+    @Schema(description = "Unique identifier of the bid", example = "1")
     private Long id;
+    
+    @Schema(description = "Name of the bidder", example = "John Doe")
     private String bidderName;
+    
+    @Schema(description = "Bid amount in dollars", example = "150.00")
     private BigDecimal amount;
+    
+    @Schema(description = "ID of the auction item", example = "1")
     private Long itemId;
+    
+    @Schema(description = "Timestamp when the bid was placed", example = "2023-12-01T10:30:00")
     private LocalDateTime timestamp;
+    
+    @Schema(description = "Whether this bid is currently winning", example = "true")
     private Boolean isWinning;
     
     // Constructors
