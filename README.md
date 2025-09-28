@@ -30,6 +30,22 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 - Database: `SampleDB` (will be created automatically)
 - SQL Server credentials: `sa` / `YourStrong@Passw0rd`
 
+### SQL Server Setup
+
+#### Option 1: Using Docker (Recommended)
+```bash
+# Start SQL Server using Docker Compose
+docker-compose up -d
+
+# Wait for SQL Server to be ready (about 30 seconds)
+# The database and tables will be created automatically
+```
+
+#### Option 2: Manual SQL Server Installation
+1. Install SQL Server 2019 or later
+2. Run the setup script: `sql-server-setup.sql`
+3. Ensure SQL Server is running on port 1433
+
 ### Running the Application
 
 1. Clone or download the project
