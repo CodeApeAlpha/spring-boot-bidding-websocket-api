@@ -24,6 +24,32 @@ A Spring Boot application that provides a REST API for bidding with real-time We
 
 ## Getting Started
 
+### Quick Start
+
+#### Using Docker for SQL Server (recommended)
+```bash
+# 1) Start SQL Server locally
+docker-compose up -d
+
+# 2) Start the Spring Boot app (in another terminal)
+mvn spring-boot:run
+```
+
+#### Build a runnable JAR instead of using mvn spring-boot:run
+```bash
+mvn -DskipTests package
+java -jar target/bidding-websocket-api-1.0.0.jar
+```
+
+If port 8080 is already in use, start the app on another port:
+```bash
+# Using mvn
+SERVER_PORT=8081 mvn spring-boot:run
+
+# Or with the jar
+java -jar target/bidding-websocket-api-1.0.0.jar --server.port=8081
+```
+
 ### Prerequisites
 
 - Java 17 or higher
@@ -63,7 +89,7 @@ docker-compose up -d
 
 - **REST API**: `http://localhost:8080/api/`
 - **Web Interface**: `http://localhost:8080/`
-- **API Documentation**: `http://localhost:8080/swagger-ui.html`
+- **API Documentation**: `http://localhost:8080/swagger-ui/index.html`
 - **OpenAPI JSON**: `http://localhost:8080/api-docs`
 - **Database**: SQL Server on `localhost:1433`
   - Database Name: `SampleDB`
