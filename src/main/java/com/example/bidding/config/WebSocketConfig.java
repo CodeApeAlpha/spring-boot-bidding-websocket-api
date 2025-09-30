@@ -12,7 +12,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Enable a simple in-memory message broker to carry messages back to the client
+        // Enable simple broker for live feed and item-specific updates
         config.enableSimpleBroker("/topic");
         // Set the application destination prefix
         config.setApplicationDestinationPrefixes("/app");

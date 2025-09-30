@@ -1,7 +1,7 @@
 package com.example.bidding.config;
 
 import com.example.bidding.model.Item;
-import com.example.bidding.repository.ItemRepository;
+import com.example.bidding.repository.JdbcItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class DataInitializer implements CommandLineRunner {
     
     @Autowired
-    private ItemRepository itemRepository;
+    private JdbcItemRepository itemRepository;
     
     @Override
     public void run(String... args) throws Exception {

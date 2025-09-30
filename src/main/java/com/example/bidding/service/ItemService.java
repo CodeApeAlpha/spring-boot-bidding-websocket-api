@@ -6,7 +6,7 @@ import com.example.bidding.model.AuctionStatus;
 // Entity representing an auction item
 import com.example.bidding.model.Item;
 // Repository for item persistence operations
-import com.example.bidding.repository.ItemRepository;
+import com.example.bidding.repository.JdbcItemRepository;
 // Spring dependency injection
 import org.springframework.beans.factory.annotation.Autowired;
 // Scheduler to run periodic tasks
@@ -31,7 +31,7 @@ public class ItemService {
     
     // Inject item repository
     @Autowired
-    private ItemRepository itemRepository;
+    private JdbcItemRepository itemRepository;
     
     // Create and persist a new item entity
     public Item createItem(Item item) {

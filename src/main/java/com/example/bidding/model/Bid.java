@@ -1,8 +1,6 @@
-// Package containing JPA entity models
+// Package containing model classes
 package com.example.bidding.model;
 
-// JPA annotations for ORM mapping
-import jakarta.persistence.*;
 // Bean Validation: minimum decimal constraint
 import jakarta.validation.constraints.DecimalMin;
 // Bean Validation: non-null constraint
@@ -12,44 +10,30 @@ import java.math.BigDecimal;
 // LocalDateTime to store bid creation timestamp
 import java.time.LocalDateTime;
 
-// Marks this class as a JPA entity
-@Entity
-// Maps the entity to the "bids" table
-@Table(name = "bids")
+// Plain POJO for Bid data
 public class Bid {
     
     // Primary key identifier
-    @Id
-    // Auto-increment strategy appropriate for MySQL/H2
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     // Bidder name must be provided
     @NotNull(message = "Bidder name is required")
-    // Column cannot be null in database
-    @Column(nullable = false)
     private String bidderName;
     
     // Amount is required
     @NotNull(message = "Bid amount is required")
     // Minimum allowed amount is 0.01
     @DecimalMin(value = "0.01", message = "Bid amount must be greater than 0")
-    // Store as DECIMAL(10,2)
-    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
     
     // Bids must reference an item
     @NotNull(message = "Item ID is required")
-    // Column cannot be null
-    @Column(nullable = false)
     private Long itemId;
     
     // Timestamp of when the bid was created
-    @Column(nullable = false)
     private LocalDateTime timestamp;
     
     // Whether this bid is currently winning
-    @Column(nullable = false)
     private Boolean isWinning = false;
     
     // Constructors

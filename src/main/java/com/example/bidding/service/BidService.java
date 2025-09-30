@@ -14,9 +14,9 @@ import com.example.bidding.model.Bid;
 // Entity representing an auction item
 import com.example.bidding.model.Item;
 // Repository for bid persistence operations
-import com.example.bidding.repository.BidRepository;
+import com.example.bidding.repository.JdbcBidRepository;
 // Repository for item persistence operations
-import com.example.bidding.repository.ItemRepository;
+import com.example.bidding.repository.JdbcItemRepository;
 // Spring dependency injection
 import org.springframework.beans.factory.annotation.Autowired;
 // Template to send STOMP messages to clients
@@ -45,15 +45,16 @@ public class BidService {
     
     // Inject bid repository
     @Autowired
-    private BidRepository bidRepository;
+    private JdbcBidRepository bidRepository;
     
     // Inject item repository
     @Autowired
-    private ItemRepository itemRepository;
+    private JdbcItemRepository itemRepository;
     
     // Inject messaging template for WebSocket updates
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    
     
     // Place a new bid after validating business rules
     public BidResponse placeBid(BidRequest bidRequest) {
@@ -101,14 +102,16 @@ public class BidService {
         bid.setIsWinning(true);
         bid = bidRepository.save(bid);
         
-        // Send WebSocket update to item-specific topic
+        // Send real-time WebSocket updates
         BidResponse bidResponse = convertToResponse(bid);
-        WebSocketMessage message = new WebSocketMessage("NEW_BID", bidResponse, bidRequest.getItemId());
-        messagingTemplate.convertAndSend("/topic/bids/" + bidRequest.getItemId(), message);
         
-        // Send general update for all active auctions
-        WebSocketMessage generalMessage = new WebSocketMessage("BID_UPDATE", bidResponse);
-        messagingTemplate.convertAndSend("/topic/auctions", generalMessage);
+        // Send item-specific update
+        WebSocketMessage itemMessage = new WebSocketMessage("NEW_BID", bidResponse, bidRequest.getItemId());
+        messagingTemplate.convertAndSend("/topic/bids/" + bidRequest.getItemId(), itemMessage);
+        
+        // Send general live feed update
+        WebSocketMessage liveFeedMessage = new WebSocketMessage("BID_UPDATE", bidResponse);
+        messagingTemplate.convertAndSend("/topic/auctions", liveFeedMessage);
         
         return bidResponse;
     }
@@ -137,6 +140,14 @@ public class BidService {
         List<Bid> bids = bidRepository.findTopBidsByItemId(itemId);
         return bids.stream()
                 .limit(limit)
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    // Retrieve all bids from all items for shared live feed
+    public List<BidResponse> getAllBids() {
+        List<Bid> bids = bidRepository.findAll();
+        return bids.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }

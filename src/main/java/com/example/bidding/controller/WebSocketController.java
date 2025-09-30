@@ -7,8 +7,12 @@ import com.example.bidding.dto.WebSocketMessage;
 import com.example.bidding.model.AuctionStatus;
 // Entity representing an auction item
 import com.example.bidding.model.Item;
+// Entity representing a bid record
+import com.example.bidding.model.Bid;
 // Service providing access to item data and business logic
 import com.example.bidding.service.ItemService;
+// Repository for bid persistence operations
+import com.example.bidding.repository.JdbcBidRepository;
 // Spring dependency injection
 import org.springframework.beans.factory.annotation.Autowired;
 // Maps incoming STOMP messages to handler methods
@@ -31,6 +35,10 @@ public class WebSocketController {
     @Autowired
     private ItemService itemService;
     
+    // Inject bid repository to fetch bid data
+    @Autowired
+    private JdbcBidRepository bidRepository;
+    
     // Inject messaging template to broadcast messages
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -51,6 +59,15 @@ public class WebSocketController {
         // Acknowledge join to the specific auction topic
         WebSocketMessage message = new WebSocketMessage("JOINED_AUCTION", "Successfully joined auction", itemId);
         messagingTemplate.convertAndSend("/topic/auctions/" + itemId, message);
+    }
+    
+    // Handle client messages sent to /app/bids/subscribe
+    @MessageMapping("/bids/subscribe")
+    public void subscribeToBids(Long itemId) {
+        // Send current bids for the item
+        List<Bid> bids = bidRepository.findByItemIdOrderByAmountDesc(itemId);
+        WebSocketMessage message = new WebSocketMessage("CURRENT_BIDS", bids, itemId);
+        messagingTemplate.convertAndSend("/topic/bids/" + itemId, message);
     }
     
     // Programmatically broadcast auction status updates to all subscribers

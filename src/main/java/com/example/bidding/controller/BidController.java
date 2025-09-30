@@ -169,4 +169,21 @@ public class BidController {
         // Return 200 OK with the list of top bids
         return ResponseEntity.ok(topBids);
     }
+    
+    // Document endpoint to get all bids from all items
+    @Operation(summary = "Get all bids", description = "Retrieve all bids from all auction items for the shared live feed")
+    // Success response documented for Swagger
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved all bids",
+                    content = @Content(schema = @Schema(implementation = BidResponse.class)))
+    })
+    // HTTP GET to retrieve all bids
+    @GetMapping
+    // Returns a list of all bids
+    public ResponseEntity<List<BidResponse>> getAllBids() {
+        // Ask service for all bids
+        List<BidResponse> allBids = bidService.getAllBids();
+        // Return 200 OK with the list of all bids
+        return ResponseEntity.ok(allBids);
+    }
 }
