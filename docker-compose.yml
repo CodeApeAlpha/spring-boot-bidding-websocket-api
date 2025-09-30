@@ -1,24 +1,49 @@
 version: '3.8'
 
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: bidding-sqlserver
+  mysql:
+    image: mysql:8.0
+    container_name: bidding-mysql
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Passw0rd
-      - MSSQL_PID=Express
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: bidding_db
+      MYSQL_USER: bidding_user
+      MYSQL_PASSWORD: bidding_pass
     ports:
-      - "1433:1433"
+      - "3306:3306"
     volumes:
-      - sqlserver_data:/var/opt/mssql
-      - ./sql-server-setup.sql:/docker-entrypoint-initdb.d/setup.sql
-    restart: unless-stopped
+      - mysql_data:/var/lib/mysql
+    networks:
+      - bidding-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  bidding-api:
+    build: .
+    container_name: bidding-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/bidding_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - bidding-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/items"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
+      start_period: 40s
 
 volumes:
-  sqlserver_data:
+  mysql_data:
+
+networks:
+  bidding-network:
+    driver: bridge

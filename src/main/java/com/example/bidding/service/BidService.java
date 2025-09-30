@@ -1,37 +1,61 @@
+// Package containing service layer classes
 package com.example.bidding.service;
 
+// DTO carrying inputs for placing bids
 import com.example.bidding.dto.BidRequest;
+// DTO returned after bid operations
 import com.example.bidding.dto.BidResponse;
+// WebSocket message wrapper for broadcasting updates
 import com.example.bidding.dto.WebSocketMessage;
+// Enum representing auction status values
 import com.example.bidding.model.AuctionStatus;
+// Entity representing a bid record
 import com.example.bidding.model.Bid;
+// Entity representing an auction item
 import com.example.bidding.model.Item;
+// Repository for bid persistence operations
 import com.example.bidding.repository.BidRepository;
+// Repository for item persistence operations
 import com.example.bidding.repository.ItemRepository;
+// Spring dependency injection
 import org.springframework.beans.factory.annotation.Autowired;
+// Template to send STOMP messages to clients
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+// Marks this class as a Spring service component
 import org.springframework.stereotype.Service;
+// Transactional annotation to wrap public methods in DB transactions
 import org.springframework.transaction.annotation.Transactional;
 
+// BigDecimal for monetary arithmetic
 import java.math.BigDecimal;
+// Timestamp utilities
 import java.time.LocalDateTime;
+// Collections used in method responses
 import java.util.List;
+// Optional wrapper for possibly missing entities
 import java.util.Optional;
+// Stream utilities to map entities to DTOs
 import java.util.stream.Collectors;
 
+// Service component managed by Spring
 @Service
+// Enable transactional behavior for public methods
 @Transactional
 public class BidService {
     
+    // Inject bid repository
     @Autowired
     private BidRepository bidRepository;
     
+    // Inject item repository
     @Autowired
     private ItemRepository itemRepository;
     
+    // Inject messaging template for WebSocket updates
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     
+    // Place a new bid after validating business rules
     public BidResponse placeBid(BidRequest bidRequest) {
         // Validate item exists and is active
         Optional<Item> itemOpt = itemRepository.findById(bidRequest.getItemId());
@@ -77,7 +101,7 @@ public class BidService {
         bid.setIsWinning(true);
         bid = bidRepository.save(bid);
         
-        // Send WebSocket update
+        // Send WebSocket update to item-specific topic
         BidResponse bidResponse = convertToResponse(bid);
         WebSocketMessage message = new WebSocketMessage("NEW_BID", bidResponse, bidRequest.getItemId());
         messagingTemplate.convertAndSend("/topic/bids/" + bidRequest.getItemId(), message);
@@ -89,6 +113,7 @@ public class BidService {
         return bidResponse;
     }
     
+    // Retrieve bids for a given item, mapped to DTOs
     public List<BidResponse> getBidsByItemId(Long itemId) {
         List<Bid> bids = bidRepository.findByItemIdOrderByAmountDesc(itemId);
         return bids.stream()
@@ -96,15 +121,18 @@ public class BidService {
                 .collect(Collectors.toList());
     }
     
+    // Retrieve the current winning bid for an item
     public BidResponse getWinningBid(Long itemId) {
         Optional<Bid> winningBid = bidRepository.findWinningBidByItemId(itemId);
         return winningBid.map(this::convertToResponse).orElse(null);
     }
     
+    // Count number of bids placed on an item
     public Long getBidCount(Long itemId) {
         return bidRepository.countBidsByItemId(itemId);
     }
     
+    // Retrieve top bids limited by the specified count
     public List<BidResponse> getTopBids(Long itemId, int limit) {
         List<Bid> bids = bidRepository.findTopBidsByItemId(itemId);
         return bids.stream()
@@ -113,6 +141,7 @@ public class BidService {
                 .collect(Collectors.toList());
     }
     
+    // Helper to map a Bid entity to a BidResponse DTO
     private BidResponse convertToResponse(Bid bid) {
         return new BidResponse(
             bid.getId(),
