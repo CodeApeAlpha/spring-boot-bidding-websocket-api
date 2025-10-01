@@ -1,84 +1,117 @@
-// Package containing service layer classes
 package com.example.bidding.service;
 
-// Enum representing auction status values
-import com.example.bidding.model.AuctionStatus;
-// Entity representing an auction item
-import com.example.bidding.model.Item;
-// Repository for item persistence operations
-import com.example.bidding.repository.JdbcItemRepository;
-// Spring dependency injection
+import com.example.bidding.dto.response.ItemResponse;
+import com.example.bidding.entity.AuctionStatus;
+import com.example.bidding.entity.Item;
+import com.example.bidding.exception.ResourceNotFoundException;
+import com.example.bidding.repository.ItemRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-// Scheduler to run periodic tasks
 import org.springframework.scheduling.annotation.Scheduled;
-// Marks this class as a Spring service component
 import org.springframework.stereotype.Service;
-// Transactional annotation to wrap public methods in DB transactions
 import org.springframework.transaction.annotation.Transactional;
 
-// Timestamp utilities
 import java.time.LocalDateTime;
-// Collections utilities
 import java.util.List;
-// Optional wrapper for possibly missing entities
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-// Service component managed by Spring
 @Service
-// Enable transactional behavior for public methods
 @Transactional
 public class ItemService {
     
-    // Inject item repository
+    private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
+    
     @Autowired
-    private JdbcItemRepository itemRepository;
+    private ItemRepository itemRepository;
     
-    // Create and persist a new item entity
     public Item createItem(Item item) {
+        logger.info("Creating new item: {}", item.getName());
         return itemRepository.save(item);
     }
     
-    // Retrieve all items
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ItemResponse> getAllItems() {
+        logger.debug("Retrieving all items");
+        return itemRepository.findAll().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
     
-    // Retrieve only items with ACTIVE status
-    public List<Item> getActiveItems() {
-        return itemRepository.findByStatus(AuctionStatus.ACTIVE);
+    @Transactional(readOnly = true)
+    public List<ItemResponse> getActiveItems() {
+        logger.debug("Retrieving active items");
+        return itemRepository.findActiveItems(AuctionStatus.ACTIVE, LocalDateTime.now()).stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
     
-    // Find a single item by ID
-    public Optional<Item> getItemById(Long id) {
-        return itemRepository.findById(id);
+    @Transactional(readOnly = true)
+    public ItemResponse getItemById(Long id) {
+        logger.debug("Retrieving item by ID: {}", id);
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + id));
+        return convertToResponse(item);
     }
     
-    // Update an existing item
-    public Item updateItem(Item item) {
-        return itemRepository.save(item);
+    public ItemResponse updateItem(Long id, Item item) {
+        logger.info("Updating item with ID: {}", id);
+        Item existingItem = itemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + id));
+        
+        existingItem.setName(item.getName());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setStartingPrice(item.getStartingPrice());
+        existingItem.setEndTime(item.getEndTime());
+        
+        Item savedItem = itemRepository.save(existingItem);
+        return convertToResponse(savedItem);
     }
     
-    // Delete an item by ID
     public void deleteItem(Long id) {
+        logger.info("Deleting item with ID: {}", id);
+        if (!itemRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Item not found with id: " + id);
+        }
         itemRepository.deleteById(id);
     }
     
-    // Scheduled method to end expired auctions
     @Scheduled(fixedRate = 60000) // Run every minute
     public void endExpiredAuctions() {
+        logger.debug("Checking for expired auctions");
         List<Item> expiredItems = itemRepository.findExpiredItems(
-            AuctionStatus.ACTIVE, 
-            LocalDateTime.now()
+                AuctionStatus.ACTIVE, 
+                LocalDateTime.now()
         );
         
-        for (Item item : expiredItems) {
-            item.setStatus(AuctionStatus.ENDED);
-            itemRepository.save(item);
+        if (!expiredItems.isEmpty()) {
+            logger.info("Found {} expired items, updating status", expiredItems.size());
+            expiredItems.forEach(item -> {
+                item.setStatus(AuctionStatus.EXPIRED);
+                itemRepository.save(item);
+            });
         }
     }
     
-    // Retrieve items filtered by status
-    public List<Item> getItemsByStatus(AuctionStatus status) {
-        return itemRepository.findByStatus(status);
+    @Transactional(readOnly = true)
+    public List<ItemResponse> getItemsByStatus(AuctionStatus status) {
+        logger.debug("Retrieving items by status: {}", status);
+        return itemRepository.findByStatus(status).stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    private ItemResponse convertToResponse(Item item) {
+        return new ItemResponse(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getStartingPrice(),
+                item.getCurrentHighestBid(),
+                item.getStartTime(),
+                item.getEndTime(),
+                item.getStatus()
+        );
     }
 }

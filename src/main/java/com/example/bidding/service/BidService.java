@@ -1,76 +1,56 @@
-// Package containing service layer classes
 package com.example.bidding.service;
 
-// DTO carrying inputs for placing bids
-import com.example.bidding.dto.BidRequest;
-// DTO returned after bid operations
-import com.example.bidding.dto.BidResponse;
-// WebSocket message wrapper for broadcasting updates
+import com.example.bidding.dto.request.BidRequest;
+import com.example.bidding.dto.response.BidResponse;
 import com.example.bidding.dto.WebSocketMessage;
-// Enum representing auction status values
-import com.example.bidding.model.AuctionStatus;
-// Entity representing a bid record
-import com.example.bidding.model.Bid;
-// Entity representing an auction item
-import com.example.bidding.model.Item;
-// Repository for bid persistence operations
-import com.example.bidding.repository.JdbcBidRepository;
-// Repository for item persistence operations
-import com.example.bidding.repository.JdbcItemRepository;
-// Spring dependency injection
+import com.example.bidding.entity.AuctionStatus;
+import com.example.bidding.entity.Bid;
+import com.example.bidding.entity.Item;
+import com.example.bidding.exception.BusinessException;
+import com.example.bidding.exception.ResourceNotFoundException;
+import com.example.bidding.repository.BidRepository;
+import com.example.bidding.repository.ItemRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-// Template to send STOMP messages to clients
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-// Marks this class as a Spring service component
 import org.springframework.stereotype.Service;
-// Transactional annotation to wrap public methods in DB transactions
 import org.springframework.transaction.annotation.Transactional;
 
-// BigDecimal for monetary arithmetic
 import java.math.BigDecimal;
-// Timestamp utilities
 import java.time.LocalDateTime;
-// Collections used in method responses
 import java.util.List;
-// Optional wrapper for possibly missing entities
 import java.util.Optional;
-// Stream utilities to map entities to DTOs
 import java.util.stream.Collectors;
 
-// Service component managed by Spring
 @Service
-// Enable transactional behavior for public methods
 @Transactional
 public class BidService {
     
-    // Inject bid repository
-    @Autowired
-    private JdbcBidRepository bidRepository;
+    private static final Logger logger = LoggerFactory.getLogger(BidService.class);
     
-    // Inject item repository
     @Autowired
-    private JdbcItemRepository itemRepository;
+    private BidRepository bidRepository;
     
-    // Inject messaging template for WebSocket updates
+    @Autowired
+    private ItemRepository itemRepository;
+    
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     
-    
-    // Place a new bid after validating business rules
     public BidResponse placeBid(BidRequest bidRequest) {
-        // Validate item exists and is active
-        Optional<Item> itemOpt = itemRepository.findById(bidRequest.getItemId());
-        if (itemOpt.isEmpty()) {
-            throw new IllegalArgumentException("Item not found");
-        }
+        logger.info("Placing bid for item {} by {}", bidRequest.getItemId(), bidRequest.getBidderName());
         
-        Item item = itemOpt.get();
+        // Validate item exists and is active
+        Item item = itemRepository.findById(bidRequest.getItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + bidRequest.getItemId()));
+        
         if (item.getStatus() != AuctionStatus.ACTIVE) {
-            throw new IllegalArgumentException("Auction is not active");
+            throw new BusinessException("Auction is not active");
         }
         
         if (LocalDateTime.now().isAfter(item.getEndTime())) {
-            throw new IllegalArgumentException("Auction has ended");
+            throw new BusinessException("Auction has ended");
         }
         
         // Validate bid amount
@@ -79,11 +59,11 @@ public class BidService {
             item.getStartingPrice();
             
         if (bidRequest.getAmount().compareTo(minimumBid) < 0) {
-            throw new IllegalArgumentException("Bid amount must be at least " + minimumBid);
+            throw new BusinessException("Bid amount must be at least " + minimumBid);
         }
         
         // Create and save bid
-        Bid bid = new Bid(bidRequest.getBidderName(), bidRequest.getAmount(), bidRequest.getItemId());
+        Bid bid = new Bid(bidRequest.getBidderName(), bidRequest.getAmount(), item);
         bid = bidRepository.save(bid);
         
         // Update item's current highest bid
@@ -113,46 +93,60 @@ public class BidService {
         WebSocketMessage liveFeedMessage = new WebSocketMessage("BID_UPDATE", bidResponse);
         messagingTemplate.convertAndSend("/topic/auctions", liveFeedMessage);
         
+        logger.info("Bid placed successfully: {}", bidResponse.getId());
         return bidResponse;
     }
     
-    // Retrieve bids for a given item, mapped to DTOs
+    @Transactional(readOnly = true)
     public List<BidResponse> getBidsByItemId(Long itemId) {
+        logger.debug("Retrieving bids for item: {}", itemId);
         List<Bid> bids = bidRepository.findByItemIdOrderByAmountDesc(itemId);
         return bids.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
     
-    // Retrieve the current winning bid for an item
+    @Transactional(readOnly = true)
     public BidResponse getWinningBid(Long itemId) {
+        logger.debug("Retrieving winning bid for item: {}", itemId);
         Optional<Bid> winningBid = bidRepository.findWinningBidByItemId(itemId);
         return winningBid.map(this::convertToResponse).orElse(null);
     }
     
-    // Count number of bids placed on an item
+    @Transactional(readOnly = true)
     public Long getBidCount(Long itemId) {
+        logger.debug("Counting bids for item: {}", itemId);
         return bidRepository.countBidsByItemId(itemId);
     }
     
-    // Retrieve top bids limited by the specified count
+    @Transactional(readOnly = true)
     public List<BidResponse> getTopBids(Long itemId, int limit) {
-        List<Bid> bids = bidRepository.findTopBidsByItemId(itemId);
+        logger.debug("Retrieving top {} bids for item: {}", limit, itemId);
+        List<Bid> bids = bidRepository.findHighestBidsByItemId(itemId);
         return bids.stream()
                 .limit(limit)
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
     
-    // Retrieve all bids from all items for shared live feed
+    @Transactional(readOnly = true)
     public List<BidResponse> getAllBids() {
+        logger.debug("Retrieving all bids");
         List<Bid> bids = bidRepository.findAll();
         return bids.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
     
-    // Helper to map a Bid entity to a BidResponse DTO
+    @Transactional(readOnly = true)
+    public List<BidResponse> getBidsByBidderName(String bidderName) {
+        logger.debug("Retrieving bids by bidder: {}", bidderName);
+        List<Bid> bids = bidRepository.findByBidderNameOrderByTimestampDesc(bidderName);
+        return bids.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
     private BidResponse convertToResponse(Bid bid) {
         return new BidResponse(
             bid.getId(),

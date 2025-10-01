@@ -1,86 +1,55 @@
-// Package declaration for controller classes
 package com.example.bidding.controller;
 
-// DTO used to transport WebSocket payloads to clients
 import com.example.bidding.dto.WebSocketMessage;
-// Enum representing auction lifecycle states
-import com.example.bidding.model.AuctionStatus;
-// Entity representing an auction item
-import com.example.bidding.model.Item;
-// Entity representing a bid record
-import com.example.bidding.model.Bid;
-// Service providing access to item data and business logic
+import com.example.bidding.dto.response.ItemResponse;
+import com.example.bidding.entity.AuctionStatus;
 import com.example.bidding.service.ItemService;
-// Repository for bid persistence operations
-import com.example.bidding.repository.JdbcBidRepository;
-// Spring dependency injection
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-// Maps incoming STOMP messages to handler methods
 import org.springframework.messaging.handler.annotation.MessageMapping;
-// Sends handler return values to a STOMP destination
 import org.springframework.messaging.handler.annotation.SendTo;
-// Template used to programmatically send messages to destinations
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-// Marks this as a Spring messaging controller
 import org.springframework.stereotype.Controller;
 
-// Java util list for collections
 import java.util.List;
 
-// WebSocket/STOMP controller for real-time auction updates
 @Controller
 public class WebSocketController {
     
-    // Inject item service to fetch item data for messages
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketController.class);
+    
     @Autowired
     private ItemService itemService;
     
-    // Inject bid repository to fetch bid data
-    @Autowired
-    private JdbcBidRepository bidRepository;
-    
-    // Inject messaging template to broadcast messages
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     
-    // Handle client messages sent to /app/auctions/status
     @MessageMapping("/auctions/status")
-    // Broadcast the return value to subscribers of /topic/auctions/status
     @SendTo("/topic/auctions/status")
     public WebSocketMessage getAuctionStatus() {
-        // Fetch active items and wrap them in a message payload
-        List<Item> activeItems = itemService.getActiveItems();
+        logger.debug("WebSocket: Client requested auction status");
+        List<ItemResponse> activeItems = itemService.getActiveItems();
         return new WebSocketMessage("AUCTION_STATUS", activeItems);
     }
     
-    // Handle client messages sent to /app/auctions/join
     @MessageMapping("/auctions/join")
     public void joinAuction(Long itemId) {
-        // Acknowledge join to the specific auction topic
+        logger.debug("WebSocket: Client joined auction for item: {}", itemId);
         WebSocketMessage message = new WebSocketMessage("JOINED_AUCTION", "Successfully joined auction", itemId);
         messagingTemplate.convertAndSend("/topic/auctions/" + itemId, message);
     }
     
-    // Handle client messages sent to /app/bids/subscribe
-    @MessageMapping("/bids/subscribe")
-    public void subscribeToBids(Long itemId) {
-        // Send current bids for the item
-        List<Bid> bids = bidRepository.findByItemIdOrderByAmountDesc(itemId);
-        WebSocketMessage message = new WebSocketMessage("CURRENT_BIDS", bids, itemId);
+    public void broadcastAuctionUpdate(ItemResponse item) {
+        logger.debug("WebSocket: Broadcasting auction update for item: {}", item.getId());
+        WebSocketMessage message = new WebSocketMessage("AUCTION_UPDATE", item);
+        messagingTemplate.convertAndSend("/topic/auctions", message);
+    }
+    
+    public void broadcastBidUpdate(Long itemId, Object bidData) {
+        logger.debug("WebSocket: Broadcasting bid update for item: {}", itemId);
+        WebSocketMessage message = new WebSocketMessage("BID_UPDATE", bidData, itemId);
         messagingTemplate.convertAndSend("/topic/bids/" + itemId, message);
-    }
-    
-    // Programmatically broadcast auction status updates to all subscribers
-    public void broadcastAuctionUpdate(Item item) {
-        WebSocketMessage message = new WebSocketMessage("AUCTION_UPDATE", item, item.getId(), item.getStatus());
         messagingTemplate.convertAndSend("/topic/auctions", message);
-        messagingTemplate.convertAndSend("/topic/auctions/" + item.getId(), message);
-    }
-    
-    // Programmatically broadcast a message when an auction ends
-    public void broadcastAuctionEnd(Item item) {
-        WebSocketMessage message = new WebSocketMessage("AUCTION_ENDED", item, item.getId(), AuctionStatus.ENDED);
-        messagingTemplate.convertAndSend("/topic/auctions", message);
-        messagingTemplate.convertAndSend("/topic/auctions/" + item.getId(), message);
     }
 }
