@@ -67,6 +67,8 @@ public class SecurityConfig {
                     .requestMatchers("/ws/**").permitAll()
                     .requestMatchers("/api/items/**").permitAll() // Allow public access to items for now
                     .requestMatchers("/api/bids/**").authenticated() // Require authentication for bids
+                    .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/favicon.ico").permitAll() // Allow static UI files
+                    .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll() // Allow all static resources
                     .anyRequest().authenticated()
             );
         
