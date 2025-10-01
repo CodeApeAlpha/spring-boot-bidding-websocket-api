@@ -45,17 +45,20 @@ The bidding system supports three distinct user roles, each with specific permis
 - Role badge: Pink gradient (#f093fb → #f5576c)
 
 ### 🔧 ADMIN Role
-**Purpose**: System administrators with full access
+**Purpose**: System administrators focused on user and system management
 
 **Permissions**:
-- ✅ All BUYER permissions
-- ✅ All SELLER permissions
+- ✅ View all auction items
+- ✅ View bid history and analytics
 - ✅ User management capabilities (to be implemented)
 - ✅ System configuration access
-- ✅ Full data access and modification
+- ✅ Full data access for monitoring
+- ❌ Cannot place bids (management role only)
+- ❌ Cannot create auction items (delegates to sellers)
 
 **UI Features**:
-- All features enabled
+- Bidding functionality disabled
+- "Admin - User Management Only" message displayed
 - Admin dashboard (when implemented)
 - User management interface (when implemented)
 - Role badge: Orange gradient (#fad0c4 → #ff6a00)

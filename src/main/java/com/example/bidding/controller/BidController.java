@@ -33,12 +33,13 @@ public class BidController {
     private BidService bidService;
     
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Place a new bid", description = "Place a bid on an active auction item")
+    @PreAuthorize("hasRole('BUYER')")
+    @Operation(summary = "Place a new bid", description = "Place a bid on an active auction item (BUYER role only)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Bid placed successfully",
                 content = @Content(schema = @Schema(implementation = BidResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid bid request"),
+        @ApiResponse(responseCode = "403", description = "Access denied - only BUYER role can place bids"),
         @ApiResponse(responseCode = "404", description = "Item not found"),
         @ApiResponse(responseCode = "409", description = "Auction not active or bid too low")
     })

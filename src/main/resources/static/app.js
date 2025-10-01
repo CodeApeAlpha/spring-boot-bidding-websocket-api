@@ -88,8 +88,8 @@ function setAuthenticatedUser(user, token) {
     roleElement.className = 'role-badge role-' + user.role.toLowerCase();
     
     // Show/hide features based on role
-    if (user.role === 'BUYER' || user.role === 'ADMIN') {
-        // Enable bidding functionality for buyers and admins
+    if (user.role === 'BUYER') {
+        // Enable bidding functionality for buyers only
         document.getElementById('placeBidBtn').disabled = false;
         document.getElementById('bidAmount').disabled = false;
         document.getElementById('itemSelect').disabled = false;
@@ -105,6 +105,15 @@ function setAuthenticatedUser(user, token) {
         
         const bidBtn = document.getElementById('placeBidBtn');
         bidBtn.textContent = 'Sellers Cannot Bid';
+        bidBtn.className = 'btn btn-disabled';
+    } else if (user.role === 'ADMIN') {
+        // Disable bidding for admins - they manage users, not place bids
+        document.getElementById('placeBidBtn').disabled = true;
+        document.getElementById('bidAmount').disabled = true;
+        document.getElementById('itemSelect').disabled = true;
+        
+        const bidBtn = document.getElementById('placeBidBtn');
+        bidBtn.textContent = 'Admin - User Management Only';
         bidBtn.className = 'btn btn-disabled';
     }
     
