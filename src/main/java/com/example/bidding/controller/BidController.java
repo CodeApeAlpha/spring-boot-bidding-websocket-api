@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class BidController {
     private BidService bidService;
     
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Place a new bid", description = "Place a bid on an active auction item")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Bid placed successfully",

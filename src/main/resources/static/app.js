@@ -88,6 +88,11 @@ function setAuthenticatedUser(user, token) {
     document.getElementById('bidAmount').disabled = false;
     document.getElementById('itemSelect').disabled = false;
     
+    // Update button text and styling
+    const bidBtn = document.getElementById('placeBidBtn');
+    bidBtn.textContent = 'Place Bid';
+    bidBtn.className = 'btn btn-primary';
+    
     // Load bids after authentication
     loadAllRecentBids();
 }
@@ -99,10 +104,15 @@ function setUnauthenticatedUser() {
     document.getElementById('authSection').style.display = 'flex';
     document.getElementById('userSection').style.display = 'none';
     
-    // Disable bidding functionality
-    document.getElementById('placeBidBtn').disabled = true;
+    // Disable bidding functionality and show login prompt
+    document.getElementById('placeBidBtn').disabled = false; // Keep enabled to show login prompt
     document.getElementById('bidAmount').disabled = true;
     document.getElementById('itemSelect').disabled = true;
+    
+    // Update button to show login prompt
+    const bidBtn = document.getElementById('placeBidBtn');
+    bidBtn.textContent = 'Login to Place Bid';
+    bidBtn.className = 'btn btn-outline';
     
     // Clear bids display for unauthenticated users
     const container = document.getElementById('bids');
@@ -295,6 +305,7 @@ function populateItemSelect(auctions) {
 }
 
 async function placeBid() {
+    // Check authentication first
     if (!currentUser) {
         showToast('Please login to place a bid', 'warning');
         showModal('loginModal');
@@ -342,6 +353,7 @@ async function placeBid() {
 async function loadBids(itemId) {
     if (!currentUser) {
         showToast('Please login to view bids', 'warning');
+        showModal('loginModal');
         return;
     }
     
