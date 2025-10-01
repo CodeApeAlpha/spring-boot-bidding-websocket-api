@@ -87,9 +87,20 @@ function setAuthenticatedUser(user, token) {
     roleElement.textContent = user.role;
     roleElement.className = 'role-badge role-' + user.role.toLowerCase();
     
-    // Show/hide features based on role
+    // Get UI sections
+    const placeBidSection = document.getElementById('placeBidSection');
+    const liveBidsSection = document.getElementById('liveBidsSection');
+    const statsSection = document.getElementById('statsSection');
+    const auctionsSection = document.getElementById('auctionsSection');
+    
+    // Configure UI based on role
     if (user.role === 'BUYER') {
-        // Enable bidding functionality for buyers only
+        // BUYER: Show all sections, enable bidding
+        placeBidSection.style.display = 'block';
+        liveBidsSection.style.display = 'block';
+        statsSection.style.display = 'grid';
+        auctionsSection.style.display = 'block';
+        
         document.getElementById('placeBidBtn').disabled = false;
         document.getElementById('bidAmount').disabled = false;
         document.getElementById('itemSelect').disabled = false;
@@ -97,28 +108,31 @@ function setAuthenticatedUser(user, token) {
         const bidBtn = document.getElementById('placeBidBtn');
         bidBtn.textContent = 'Place Bid';
         bidBtn.className = 'btn btn-primary';
+        
+        loadAllRecentBids();
+        
     } else if (user.role === 'SELLER') {
-        // Disable bidding for sellers
-        document.getElementById('placeBidBtn').disabled = true;
-        document.getElementById('bidAmount').disabled = true;
-        document.getElementById('itemSelect').disabled = true;
+        // SELLER: Show auctions and stats, hide bidding
+        placeBidSection.style.display = 'none';
+        liveBidsSection.style.display = 'none';
+        statsSection.style.display = 'grid';
+        auctionsSection.style.display = 'block';
         
-        const bidBtn = document.getElementById('placeBidBtn');
-        bidBtn.textContent = 'Sellers Cannot Bid';
-        bidBtn.className = 'btn btn-disabled';
+        // Show seller-specific message
+        showToast('Welcome Seller! You can manage your auction items here.', 'info');
+        
     } else if (user.role === 'ADMIN') {
-        // Disable bidding for admins - they manage users, not place bids
-        document.getElementById('placeBidBtn').disabled = true;
-        document.getElementById('bidAmount').disabled = true;
-        document.getElementById('itemSelect').disabled = true;
+        // ADMIN: Show stats and user management view
+        placeBidSection.style.display = 'none';
+        liveBidsSection.style.display = 'block'; // Can see all activity
+        statsSection.style.display = 'grid';
+        auctionsSection.style.display = 'block';
         
-        const bidBtn = document.getElementById('placeBidBtn');
-        bidBtn.textContent = 'Admin - User Management Only';
-        bidBtn.className = 'btn btn-disabled';
+        // Show admin-specific message
+        showToast('Welcome Admin! System monitoring and user management access.', 'info');
+        
+        loadAllRecentBids(); // Admin can see all activity
     }
-    
-    // Load bids after authentication
-    loadAllRecentBids();
 }
 
 function setUnauthenticatedUser() {
@@ -128,19 +142,19 @@ function setUnauthenticatedUser() {
     document.getElementById('authSection').style.display = 'flex';
     document.getElementById('userSection').style.display = 'none';
     
-    // Disable bidding functionality and show login prompt
-    document.getElementById('placeBidBtn').disabled = false; // Keep enabled to show login prompt
-    document.getElementById('bidAmount').disabled = true;
-    document.getElementById('itemSelect').disabled = true;
+    // Hide all role-specific sections for unauthenticated users
+    const placeBidSection = document.getElementById('placeBidSection');
+    const liveBidsSection = document.getElementById('liveBidsSection');
+    const statsSection = document.getElementById('statsSection');
+    const auctionsSection = document.getElementById('auctionsSection');
     
-    // Update button to show login prompt
-    const bidBtn = document.getElementById('placeBidBtn');
-    bidBtn.textContent = 'Login to Place Bid';
-    bidBtn.className = 'btn btn-outline';
+    placeBidSection.style.display = 'none';
+    liveBidsSection.style.display = 'none';
+    statsSection.style.display = 'none';
+    auctionsSection.style.display = 'none';
     
-    // Clear bids display for unauthenticated users
-    const container = document.getElementById('bids');
-    container.innerHTML = '<div class="text-center text-muted">Please login to view live bids</div>';
+    // Show login message in main area
+    showToast('Please login to access the auction platform', 'info');
 }
 
 async function handleLogin(e) {
