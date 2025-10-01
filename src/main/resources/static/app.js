@@ -194,7 +194,7 @@ function logout() {
 
 // WebSocket Functions
 function setStatus(connected) {
-    const el = document.getElementById('status');
+  const el = document.getElementById('status');
     const icon = el.querySelector('i');
     const text = el.querySelector('span');
     
@@ -214,16 +214,16 @@ function connect() {
         return;
     }
     
-    const socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
+  const socket = new SockJS('/ws');
+  stompClient = Stomp.over(socket);
     
     stompClient.connect({}, function (frame) {
-        setStatus(true);
+    setStatus(true);
         console.log('Connected: ' + frame);
 
         // Subscribe to general auction updates for shared live bids feed
-        stompClient.subscribe('/topic/auctions', function (message) {
-            const payload = JSON.parse(message.body);
+    stompClient.subscribe('/topic/auctions', function (message) {
+      const payload = JSON.parse(message.body);
             console.log('Received auction update:', payload);
             if (payload.type === 'BID_UPDATE' || payload.type === 'NEW_BID') {
                 addBidToSharedFeed(payload.data);
@@ -246,14 +246,14 @@ function connect() {
         setStatus(false);
         // Retry connection after 5 seconds
         setTimeout(connect, 5000);
-    });
+  });
 }
 
 function disconnect() {
     if (stompClient) {
         stompClient.disconnect();
     }
-    setStatus(false);
+  setStatus(false);
 }
 
 // API Functions
@@ -271,33 +271,33 @@ async function loadAuctions() {
 }
 
 function displayAuctions(auctions) {
-    const container = document.getElementById('auctions');
-    container.innerHTML = '';
+  const container = document.getElementById('auctions');
+  container.innerHTML = '';
     
-    auctions.forEach(auction => {
-        const div = document.createElement('div');
+  auctions.forEach(auction => {
+    const div = document.createElement('div');
         div.className = 'auction-item fade-in';
-        div.innerHTML = `
-            <h3>${auction.name}</h3>
-            <p class="meta">${auction.description || ''}</p>
+    div.innerHTML = `
+      <h3>${auction.name}</h3>
+      <p class="meta">${auction.description || ''}</p>
             <div class="price">$${auction.currentHighestBid.toFixed(2)}</div>
             <div class="time">Ends: ${new Date(auction.endTime).toLocaleString()}</div>
-            <div class="row">
+      <div class="row">
                 <button class="btn btn-outline btn-sm" onclick="loadBids(${auction.id})">
                     <i class="fas fa-eye"></i>
                     View Bids
                 </button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
+      </div>
+    `;
+    container.appendChild(div);
+  });
 }
 
 function populateItemSelect(auctions) {
-    const select = document.getElementById('itemSelect');
+  const select = document.getElementById('itemSelect');
     select.innerHTML = '<option value="">Choose an item...</option>';
-    auctions.forEach(a => {
-        const opt = document.createElement('option');
+  auctions.forEach(a => {
+    const opt = document.createElement('option');
         opt.value = a.id;
         opt.textContent = a.name;
         select.appendChild(opt);
@@ -312,8 +312,8 @@ async function placeBid() {
         return;
     }
     
-    const itemId = document.getElementById('itemSelect').value;
-    const amount = document.getElementById('bidAmount').value;
+  const itemId = document.getElementById('itemSelect').value;
+  const amount = document.getElementById('bidAmount').value;
     
     if (!itemId || !amount) {
         showToast('Please select an item and enter a bid amount', 'warning');
@@ -357,7 +357,7 @@ async function loadBids(itemId) {
         return;
     }
     
-    currentItemId = parseInt(itemId);
+  currentItemId = parseInt(itemId);
     try {
         const response = await fetch(`/api/bids/item/${itemId}`);
         const bids = await response.json();
@@ -369,9 +369,9 @@ async function loadBids(itemId) {
 }
 
 function displayBids(bids) {
-    const container = document.getElementById('bids');
-    container.innerHTML = '';
-    bids.forEach(bid => addBidToHtml(container, bid, false));
+  const container = document.getElementById('bids');
+  container.innerHTML = '';
+  bids.forEach(bid => addBidToHtml(container, bid, false));
 }
 
 async function loadAllRecentBids() {
@@ -395,9 +395,9 @@ async function loadAllRecentBids() {
 }
 
 function addBidToHtml(container, bid, prepend = true) {
-    const div = document.createElement('div');
-    div.className = 'bid-item' + (bid.isWinning ? ' winning-bid' : '');
-    div.innerHTML = `
+  const div = document.createElement('div');
+  div.className = 'bid-item' + (bid.isWinning ? ' winning-bid' : '');
+  div.innerHTML = `
         <div>
             <div class="bid-amount">$${bid.amount.toFixed(2)}</div>
             <div class="bid-bidder">by ${bid.bidderName}</div>
@@ -414,8 +414,8 @@ function addBidToHtml(container, bid, prepend = true) {
 }
 
 function addBidToSharedFeed(bid) {
-    const container = document.getElementById('bids');
-    addBidToHtml(container, bid, true);
+  const container = document.getElementById('bids');
+  addBidToHtml(container, bid, true);
 }
 
 function updateAuctionDisplay(bid) {
