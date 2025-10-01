@@ -12,10 +12,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
+@Transactional
 public class UserService {
     
     @Autowired
@@ -52,8 +57,8 @@ public class UserService {
         
         User savedUser = userRepository.save(user);
         
-        // Generate JWT token
-        String token = jwtUtil.generateToken(savedUser);
+        // Generate JWT token using username
+        String token = jwtUtil.generateToken(savedUser.getUsername());
         
         return new AuthResponse(
             token,
@@ -79,7 +84,7 @@ public class UserService {
         User user = (User) authentication.getPrincipal();
         
         // Generate JWT token
-        String token = jwtUtil.generateToken(user);
+        String token = jwtUtil.generateToken(user.getUsername());
         
         return new AuthResponse(
             token,
