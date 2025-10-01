@@ -65,9 +65,11 @@ public class SecurityConfig {
                 auth.requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                     .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/api/items/**").permitAll() // Allow public access to items for now
-                    .requestMatchers("/api/bids/**").authenticated() // Require authentication for bids
+                    .requestMatchers("/api/items/**").permitAll() // Allow public access to items
+                    .requestMatchers("GET", "/api/bids/**").permitAll() // Allow public access to view bids
+                    .requestMatchers("POST", "/api/bids/**").authenticated() // Require authentication for placing bids
                     .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/favicon.ico").permitAll() // Allow static UI files
+                    .requestMatchers("/websocket-test.html").permitAll() // Allow WebSocket test file
                     .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll() // Allow all static resources
                     .anyRequest().authenticated()
             );

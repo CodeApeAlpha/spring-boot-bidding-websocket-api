@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+    
+    <script>
+        const socket = new SockJS('/ws');
+        const stompClient = Stomp.over(socket);
+        
+        function addMessage(message) {
+            const div = document.createElement('div');
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            document.getElementById('messages').appendChild(div);
+        }
+        
+        stompClient.connect({}, function (frame) {
+            document.getElementById('status').textContent = 'Connected: ' + frame;
+            addMessage('Connected to WebSocket');
+            
+            // Subscribe to auction updates
+            stompClient.subscribe('/topic/auctions', function (message) {
+                addMessage('Received: ' + message.body);
+            });
+            
+            // Test sending a message
+            setTimeout(() => {
+                stompClient.send('/app/auctions/status', {}, '');
+                addMessage('Sent status request');
+            }, 1000);
+            
+        }, function(error) {
+            document.getElementById('status').textContent = 'Error: ' + error;
+            addMessage('Connection failed: ' + error);
+        });
+    </script>
+</body>
+</html>

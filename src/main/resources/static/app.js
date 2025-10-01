@@ -9,6 +9,7 @@ let authToken = null;
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
+    connect(); // Connect to WebSocket immediately
     checkAuthStatus();
 });
 
@@ -59,7 +60,6 @@ async function checkAuthStatus() {
             if (response.ok) {
                 const user = await response.json();
                 setAuthenticatedUser(user, token);
-                connect();
             } else {
                 localStorage.removeItem('authToken');
                 setUnauthenticatedUser();
@@ -87,6 +87,9 @@ function setAuthenticatedUser(user, token) {
     document.getElementById('placeBidBtn').disabled = false;
     document.getElementById('bidAmount').disabled = false;
     document.getElementById('itemSelect').disabled = false;
+    
+    // Load bids after authentication
+    loadAllRecentBids();
 }
 
 function setUnauthenticatedUser() {
@@ -100,6 +103,10 @@ function setUnauthenticatedUser() {
     document.getElementById('placeBidBtn').disabled = true;
     document.getElementById('bidAmount').disabled = true;
     document.getElementById('itemSelect').disabled = true;
+    
+    // Clear bids display for unauthenticated users
+    const container = document.getElementById('bids');
+    container.innerHTML = '<div class="text-center text-muted">Please login to view live bids</div>';
 }
 
 async function handleLogin(e) {
@@ -123,7 +130,6 @@ async function handleLogin(e) {
             setAuthenticatedUser(authResponse, authResponse.token);
             closeModal('loginModal');
             showToast('Login successful!', 'success');
-            connect();
         } else {
             const error = await response.json();
             showToast(error.message || 'Login failed', 'error');
@@ -160,7 +166,6 @@ async function handleRegister(e) {
             setAuthenticatedUser(authResponse, authResponse.token);
             closeModal('registerModal');
             showToast('Registration successful!', 'success');
-            connect();
         } else {
             const error = await response.json();
             showToast(error.message || 'Registration failed', 'error');
@@ -174,7 +179,6 @@ async function handleRegister(e) {
 function logout() {
     localStorage.removeItem('authToken');
     setUnauthenticatedUser();
-    disconnect();
     showToast('Logged out successfully', 'info');
 }
 
@@ -221,11 +225,17 @@ function connect() {
         });
 
         loadAuctions();
-        loadAllRecentBids();
         updateStats();
+        
+        // Only load bids if user is authenticated
+        if (currentUser) {
+            loadAllRecentBids();
+        }
     }, function(error) {
         console.error('STOMP error: ' + error);
         setStatus(false);
+        // Retry connection after 5 seconds
+        setTimeout(connect, 5000);
     });
 }
 
@@ -330,6 +340,11 @@ async function placeBid() {
 }
 
 async function loadBids(itemId) {
+    if (!currentUser) {
+        showToast('Please login to view bids', 'warning');
+        return;
+    }
+    
     currentItemId = parseInt(itemId);
     try {
         const response = await fetch(`/api/bids/item/${itemId}`);
@@ -348,6 +363,10 @@ function displayBids(bids) {
 }
 
 async function loadAllRecentBids() {
+    if (!currentUser) {
+        return; // Don't load bids if not authenticated
+    }
+    
     try {
         const response = await fetch('/api/bids');
         const bids = await response.json();
