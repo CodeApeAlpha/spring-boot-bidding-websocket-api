@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
-    role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    role VARCHAR(20) NOT NULL DEFAULT 'BUYER',
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL,
     updated_at DATETIME

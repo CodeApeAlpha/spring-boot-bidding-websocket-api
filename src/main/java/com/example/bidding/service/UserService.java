@@ -53,7 +53,17 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setRole(User.Role.USER);
+        
+        // Set role based on request, default to BUYER
+        if (request.getRole() != null && !request.getRole().isEmpty()) {
+            try {
+                user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                user.setRole(User.Role.BUYER);
+            }
+        } else {
+            user.setRole(User.Role.BUYER);
+        }
         
         User savedUser = userRepository.save(user);
         

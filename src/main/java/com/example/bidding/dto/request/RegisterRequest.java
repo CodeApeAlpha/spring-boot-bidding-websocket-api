@@ -24,6 +24,8 @@ public class RegisterRequest {
     @NotBlank(message = "Last name is required")
     private String lastName;
     
+    private String role; // BUYER, SELLER, or ADMIN
+    
     // Constructors
     public RegisterRequest() {}
     
@@ -74,5 +76,13 @@ public class RegisterRequest {
     
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+    
+    public String getRole() {
+        return role;
+    }
+    
+    public void setRole(String role) {
+        this.role = role;
     }
 }

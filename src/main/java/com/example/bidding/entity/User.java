@@ -43,7 +43,7 @@ public class User implements UserDetails {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER;
+    private Role role = Role.BUYER;
     
     @Column(name = "enabled", nullable = false)
     private boolean enabled = true;
@@ -182,6 +182,6 @@ public class User implements UserDetails {
     }
     
     public enum Role {
-        USER, ADMIN
+        BUYER, SELLER, ADMIN
     }
 }

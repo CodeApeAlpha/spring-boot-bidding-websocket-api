@@ -81,17 +81,32 @@ function setAuthenticatedUser(user, token) {
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('userSection').style.display = 'flex';
     document.getElementById('userName').textContent = user.firstName + ' ' + user.lastName;
-    document.getElementById('userRole').textContent = user.role;
     
-    // Enable bidding functionality
-    document.getElementById('placeBidBtn').disabled = false;
-    document.getElementById('bidAmount').disabled = false;
-    document.getElementById('itemSelect').disabled = false;
+    // Set role badge with styling
+    const roleElement = document.getElementById('userRole');
+    roleElement.textContent = user.role;
+    roleElement.className = 'role-badge role-' + user.role.toLowerCase();
     
-    // Update button text and styling
-    const bidBtn = document.getElementById('placeBidBtn');
-    bidBtn.textContent = 'Place Bid';
-    bidBtn.className = 'btn btn-primary';
+    // Show/hide features based on role
+    if (user.role === 'BUYER' || user.role === 'ADMIN') {
+        // Enable bidding functionality for buyers and admins
+        document.getElementById('placeBidBtn').disabled = false;
+        document.getElementById('bidAmount').disabled = false;
+        document.getElementById('itemSelect').disabled = false;
+        
+        const bidBtn = document.getElementById('placeBidBtn');
+        bidBtn.textContent = 'Place Bid';
+        bidBtn.className = 'btn btn-primary';
+    } else if (user.role === 'SELLER') {
+        // Disable bidding for sellers
+        document.getElementById('placeBidBtn').disabled = true;
+        document.getElementById('bidAmount').disabled = true;
+        document.getElementById('itemSelect').disabled = true;
+        
+        const bidBtn = document.getElementById('placeBidBtn');
+        bidBtn.textContent = 'Sellers Cannot Bid';
+        bidBtn.className = 'btn btn-disabled';
+    }
     
     // Load bids after authentication
     loadAllRecentBids();
@@ -158,7 +173,8 @@ async function handleRegister(e) {
         email: document.getElementById('registerEmail').value,
         password: document.getElementById('registerPassword').value,
         firstName: document.getElementById('registerFirstName').value,
-        lastName: document.getElementById('registerLastName').value
+        lastName: document.getElementById('registerLastName').value,
+        role: document.getElementById('registerRole').value
     };
     
     try {
