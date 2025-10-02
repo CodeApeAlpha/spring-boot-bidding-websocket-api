@@ -1005,29 +1005,106 @@ function loadAdminAuctions() {
     const container = document.getElementById('adminAuctionsView');
     if (!container) return;
     
-    // Reuse existing loadAuctions and display in admin view
-    fetch('/api/items')
-        .then(response => response.json())
-        .then(items => {
-            if (!items || items.length === 0) {
-                container.innerHTML = '<p>No auctions available</p>';
-                return;
-            }
+    // Show loading state
+    container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Loading auctions...</div>';
+    
+    // Fetch auctions and bids
+    Promise.all([
+        fetch('/api/items').then(r => r.json()),
+        fetch('/api/bids').then(r => r.json())
+    ])
+    .then(([items, bids]) => {
+        if (!items || items.length === 0) {
+            container.innerHTML = `
+                <div class="admin-empty-state">
+                    <i class="fas fa-gavel"></i>
+                    <h3>No Auctions Yet</h3>
+                    <p>Auction items will appear here once sellers create them.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Calculate bid counts for each item
+        const bidCounts = {};
+        bids.forEach(bid => {
+            bidCounts[bid.itemId] = (bidCounts[bid.itemId] || 0) + 1;
+        });
+        
+        // Sort items by most bids first
+        items.sort((a, b) => (bidCounts[b.id] || 0) - (bidCounts[a.id] || 0));
+        
+        container.innerHTML = items.map(item => {
+            const bidCount = bidCounts[item.id] || 0;
+            const currentPrice = item.currentPrice || item.startingPrice;
+            const isActive = item.active !== false;
             
-            container.innerHTML = items.map(item => `
-                <div class="stat-card">
-                    <h4>${item.name}</h4>
-                    <p>${item.description}</p>
-                    <div style="margin-top: 1rem;">
-                        <strong>Current Bid:</strong> $${item.currentPrice || item.startingPrice}
+            return `
+                <div class="admin-auction-card ${isActive ? '' : 'inactive'}">
+                    <div class="admin-auction-header">
+                        <div class="admin-auction-badge ${isActive ? 'badge-active' : 'badge-inactive'}">
+                            ${isActive ? '<i class="fas fa-circle"></i> Active' : '<i class="fas fa-circle"></i> Inactive'}
+                        </div>
+                        <div class="admin-auction-id">ID: ${item.id}</div>
+                    </div>
+                    
+                    <div class="admin-auction-body">
+                        <h3 class="admin-auction-title">${item.name}</h3>
+                        <p class="admin-auction-description">${item.description || 'No description'}</p>
+                        
+                        <div class="admin-auction-stats">
+                            <div class="admin-auction-stat">
+                                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                                <div class="stat-details">
+                                    <span class="stat-value">$${currentPrice.toFixed(2)}</span>
+                                    <span class="stat-label">Current Price</span>
+                                </div>
+                            </div>
+                            <div class="admin-auction-stat">
+                                <div class="stat-icon"><i class="fas fa-tag"></i></div>
+                                <div class="stat-details">
+                                    <span class="stat-value">$${item.startingPrice.toFixed(2)}</span>
+                                    <span class="stat-label">Starting Price</span>
+                                </div>
+                            </div>
+                            <div class="admin-auction-stat">
+                                <div class="stat-icon"><i class="fas fa-gavel"></i></div>
+                                <div class="stat-details">
+                                    <span class="stat-value">${bidCount}</span>
+                                    <span class="stat-label">Total Bids</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${bidCount > 0 ? `
+                            <div class="admin-auction-activity">
+                                <i class="fas fa-fire"></i>
+                                <span>${bidCount} ${bidCount === 1 ? 'bid' : 'bids'} placed</span>
+                            </div>
+                        ` : `
+                            <div class="admin-auction-activity inactive">
+                                <i class="fas fa-clock"></i>
+                                <span>No bids yet</span>
+                            </div>
+                        `}
                     </div>
                 </div>
-            `).join('');
-        })
-        .catch(error => {
-            console.error('Error loading auctions:', error);
-            container.innerHTML = '<p>Failed to load auctions</p>';
-        });
+            `;
+        }).join('');
+    })
+    .catch(error => {
+        console.error('Error loading auctions:', error);
+        container.innerHTML = `
+            <div class="admin-error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to Load Auctions</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="loadAdminAuctions()">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>
+        `;
+    });
 }
 
 function loadAdminActivity() {
