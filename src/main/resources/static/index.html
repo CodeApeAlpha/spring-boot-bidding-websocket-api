@@ -509,23 +509,23 @@
                     </div>
 
                     <nav class="admin-nav">
-                        <a href="#" class="admin-nav-item active" onclick="showAdminSection('overview'); return false;">
+                        <a href="#" class="admin-nav-item active" onclick="showAdminSection(event, 'overview'); return false;">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Overview</span>
                         </a>
-                        <a href="#" class="admin-nav-item" onclick="showAdminSection('users'); return false;">
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection(event, 'users'); return false;">
                             <i class="fas fa-users"></i>
                             <span>User Management</span>
                         </a>
-                        <a href="#" class="admin-nav-item" onclick="showAdminSection('analytics'); return false;">
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection(event, 'analytics'); return false;">
                             <i class="fas fa-chart-line"></i>
                             <span>Analytics</span>
                         </a>
-                        <a href="#" class="admin-nav-item" onclick="showAdminSection('auctions'); return false;">
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection(event, 'auctions'); return false;">
                             <i class="fas fa-gavel"></i>
                             <span>Auctions</span>
                         </a>
-                        <a href="#" class="admin-nav-item" onclick="showAdminSection('activity'); return false;">
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection(event, 'activity'); return false;">
                             <i class="fas fa-stream"></i>
                             <span>Live Activity</span>
                         </a>

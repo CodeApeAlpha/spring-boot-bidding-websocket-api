@@ -941,7 +941,12 @@ function displayAdminStats(stats, containerId = 'adminStatsGrid') {
     `;
 }
 
-function showAdminSection(sectionName) {
+function showAdminSection(event, sectionName) {
+    // Prevent default link behavior
+    if (event) {
+        event.preventDefault();
+    }
+    
     // Hide all sections
     document.querySelectorAll('.admin-section').forEach(section => {
         section.classList.remove('active');
@@ -959,7 +964,12 @@ function showAdminSection(sectionName) {
     }
     
     // Add active class to selected nav item
-    event.target.closest('.admin-nav-item').classList.add('active');
+    if (event && event.target) {
+        const navItem = event.target.closest('.admin-nav-item');
+        if (navItem) {
+            navItem.classList.add('active');
+        }
+    }
     
     // Load data for the selected section
     if (sectionName === 'overview') {
