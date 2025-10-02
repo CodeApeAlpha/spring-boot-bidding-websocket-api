@@ -36,6 +36,31 @@
             display: block;
         }
         
+        /* Navbar layout fixes */
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 1rem;
+        }
+        
+        #landingNavLinks {
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .header-actions {
+            flex-shrink: 0;
+        }
+        
+        /* Prevent container conflicts */
+        .landing-view .container {
+            display: block !important;
+            grid-template-columns: unset !important;
+            min-height: unset !important;
+        }
+        
         /* Smooth transitions */
         .fade-transition {
             animation: fadeIn 0.5s ease-in-out;
@@ -44,6 +69,16 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+        
+        /* Responsive navbar */
+        @media (max-width: 768px) {
+            #landingNavLinks a {
+                display: none;
+            }
+            .nav-container {
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -364,7 +399,7 @@
 
     <!-- APP VIEW (Shown when authenticated) -->
     <div id="appView" class="app-view">
-        <main class="container">
+        <main class="app-container">
             <!-- Left Sidebar -->
             <aside class="sidebar">
                 <!-- Place Bid Card -->

@@ -331,7 +331,7 @@ body::before {
 }
 
 /* Layout */
-.container {
+.app-container {
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: var(--space-xl);
@@ -342,7 +342,7 @@ body::before {
 }
 
 @media (max-width: 1024px) {
-  .container {
+  .app-container {
     grid-template-columns: 1fr;
     gap: var(--space-lg);
   }
@@ -812,7 +812,7 @@ body::before {
     padding: var(--space-md);
   }
   
-  .container {
+  .app-container {
     padding: var(--space-md);
     gap: var(--space-md);
   }
