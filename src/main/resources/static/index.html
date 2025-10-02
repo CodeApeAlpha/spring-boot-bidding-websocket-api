@@ -649,7 +649,44 @@
                                 <h2><i class="fas fa-stream"></i> Live Activity Feed</h2>
                                 <p>Real-time bidding activity across the platform</p>
                             </div>
+                            <button class="btn btn-outline btn-sm" onclick="loadAdminActivity()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
                         </div>
+                        
+                        <!-- Activity Controls -->
+                        <div class="admin-activity-controls">
+                            <div class="admin-activity-stats">
+                                <div class="activity-stat-badge">
+                                    <i class="fas fa-gavel"></i>
+                                    <div>
+                                        <span class="stat-badge-value" id="totalActivityBids">0</span>
+                                        <span class="stat-badge-label">Total Bids</span>
+                                    </div>
+                                </div>
+                                <div class="activity-stat-badge">
+                                    <i class="fas fa-users"></i>
+                                    <div>
+                                        <span class="stat-badge-value" id="uniqueBidders">0</span>
+                                        <span class="stat-badge-label">Unique Bidders</span>
+                                    </div>
+                                </div>
+                                <div class="activity-stat-badge">
+                                    <i class="fas fa-fire"></i>
+                                    <div>
+                                        <span class="stat-badge-value" id="mostActiveItem">-</span>
+                                        <span class="stat-badge-label">Most Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <select id="activityLimit" class="admin-select">
+                                <option value="20">Last 20 bids</option>
+                                <option value="50" selected>Last 50 bids</option>
+                                <option value="100">Last 100 bids</option>
+                                <option value="all">All bids</option>
+                            </select>
+                        </div>
+                        
                         <div id="adminLiveFeed" class="admin-live-feed">
                             <!-- Will show live bids -->
                         </div>

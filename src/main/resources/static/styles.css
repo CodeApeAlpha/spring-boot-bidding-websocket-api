@@ -1108,14 +1108,192 @@ body.app-mode .navbar {
   font-size: 0.875rem;
 }
 
+/* Admin Activity Controls */
+.admin-activity-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-activity-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.activity-stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.activity-stat-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+}
+
+.activity-stat-badge i {
+  font-size: 1.5rem;
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+.stat-badge-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.stat-badge-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* Admin Live Feed */
 .admin-live-feed {
   background: var(--bg-tertiary);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   padding: 1rem;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 400px);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-live-feed::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-live-feed::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.admin-live-feed::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: var(--radius-md);
+}
+
+.admin-live-feed::-webkit-scrollbar-thumb:hover {
+  background: #5a6fd8;
+}
+
+.admin-live-feed .bid-item {
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.admin-live-feed .bid-item:hover {
+  background: var(--bg-secondary);
+  border-left-color: #5a6fd8;
+  transform: translateX(4px);
+}
+
+.admin-live-feed .bid-item.new-bid {
+  animation: pulseNewBid 0.6s ease-out;
+  border-left-color: #10b981;
+}
+
+@keyframes pulseNewBid {
+  0%, 100% {
+    background: var(--bg-card);
+  }
+  50% {
+    background: rgba(16, 185, 129, 0.1);
+  }
+}
+
+.admin-live-feed .bid-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.admin-live-feed .bid-item-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.admin-live-feed .bid-item-time {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.admin-live-feed .bid-item-time i {
+  font-size: 0.7rem;
+}
+
+.admin-live-feed .bid-item-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-live-feed .bid-item-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.admin-live-feed .bid-item-bidder {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.admin-live-feed .bid-item-bidder i {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.admin-live-feed-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.admin-live-feed-empty i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.admin-live-feed-empty h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
 }
 
 /* Admin Auctions Controls */
@@ -1504,13 +1682,27 @@ body.app-mode .navbar {
     justify-content: center;
   }
   
-  .admin-filter-bar {
-    flex-direction: column;
-  }
-  
-  .admin-select {
-    min-width: 100%;
-  }
+    .admin-filter-bar {
+        flex-direction: column;
+    }
+    
+    .admin-select {
+        min-width: 100%;
+    }
+    
+    .admin-activity-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .admin-activity-stats {
+        width: 100%;
+    }
+    
+    .activity-stat-badge {
+        flex: 1;
+        min-width: 100%;
+    }
 }
 
 /* Admin Table */

@@ -1349,37 +1349,138 @@ function loadAdminActivity() {
     const container = document.getElementById('adminLiveFeed');
     if (!container) return;
     
+    // Show loading state
+    container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Loading activity...</div>';
+    
     // Fetch recent bids
-    fetch('/api/bids')
-        .then(response => response.json())
-        .then(bids => {
-            if (!bids || bids.length === 0) {
-                container.innerHTML = '<p>No recent activity</p>';
-                return;
-            }
-            
-            // Show last 20 bids
-            const recentBids = bids.slice(-20).reverse();
-            container.innerHTML = recentBids.map(bid => {
-                const itemName = bid.itemName || `Item #${bid.itemId}`;
-                return `
-                    <div class="bid-item">
-                        <div class="bid-item-header">
-                            <span class="bid-item-name">${itemName}</span>
-                            <span class="bid-item-time">${getRelativeTime(bid.timestamp)}</span>
-                        </div>
-                        <div class="bid-item-details">
-                            <strong>$${bid.amount.toFixed(2)}</strong>
-                            <span style="color: var(--text-muted)">by ${bid.bidderName}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        })
-        .catch(error => {
-            console.error('Error loading activity:', error);
-            container.innerHTML = '<p>Failed to load activity</p>';
+    Promise.all([
+        fetch('/api/bids').then(r => r.json()),
+        fetch('/api/items').then(r => r.json())
+    ])
+    .then(([bids, items]) => {
+        if (!bids || bids.length === 0) {
+            container.innerHTML = `
+                <div class="admin-live-feed-empty">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Activity Yet</h3>
+                    <p>Bid activity will appear here in real-time</p>
+                </div>
+            `;
+            updateActivityStats([], {});
+            return;
+        }
+        
+        // Create item lookup map
+        const itemMap = {};
+        items.forEach(item => {
+            itemMap[item.id] = item.name;
         });
+        
+        // Calculate statistics
+        const uniqueBidders = new Set(bids.map(b => b.bidderName)).size;
+        const itemBidCounts = {};
+        bids.forEach(bid => {
+            itemBidCounts[bid.itemId] = (itemBidCounts[bid.itemId] || 0) + 1;
+        });
+        
+        // Find most active item
+        let mostActiveItemId = null;
+        let maxBids = 0;
+        for (const [itemId, count] of Object.entries(itemBidCounts)) {
+            if (count > maxBids) {
+                maxBids = count;
+                mostActiveItemId = itemId;
+            }
+        }
+        const mostActiveItem = mostActiveItemId ? (itemMap[mostActiveItemId] || `Item #${mostActiveItemId}`) : '-';
+        
+        // Update stats
+        updateActivityStats(bids, { uniqueBidders, mostActiveItem });
+        
+        // Setup activity limit listener
+        const limitSelect = document.getElementById('activityLimit');
+        if (limitSelect && !limitSelect.dataset.initialized) {
+            limitSelect.dataset.initialized = 'true';
+            limitSelect.addEventListener('change', () => displayActivityBids(bids, itemMap));
+        }
+        
+        // Display bids
+        displayActivityBids(bids, itemMap);
+    })
+    .catch(error => {
+        console.error('Error loading activity:', error);
+        container.innerHTML = `
+            <div class="admin-error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to Load Activity</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="loadAdminActivity()">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>
+        `;
+    });
+}
+
+function displayActivityBids(bids, itemMap) {
+    const container = document.getElementById('adminLiveFeed');
+    const limitSelect = document.getElementById('activityLimit');
+    if (!container) return;
+    
+    // Get limit
+    const limit = limitSelect ? limitSelect.value : '50';
+    let displayBids = bids;
+    
+    if (limit !== 'all') {
+        const limitNum = parseInt(limit);
+        displayBids = bids.slice(-limitNum);
+    }
+    
+    // Reverse to show newest first
+    displayBids = displayBids.reverse();
+    
+    // Render bid items
+    container.innerHTML = displayBids.map(bid => {
+        const itemName = itemMap[bid.itemId] || `Item #${bid.itemId}`;
+        return `
+            <div class="bid-item">
+                <div class="bid-item-header">
+                    <span class="bid-item-name">${itemName}</span>
+                    <span class="bid-item-time">
+                        <i class="fas fa-clock"></i>
+                        ${getRelativeTime(bid.timestamp)}
+                    </span>
+                </div>
+                <div class="bid-item-details">
+                    <span class="bid-item-amount">$${bid.amount.toFixed(2)}</span>
+                    <span class="bid-item-bidder">
+                        <i class="fas fa-user"></i>
+                        ${bid.bidderName}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateActivityStats(bids, stats) {
+    // Update total bids
+    const totalBidsEl = document.getElementById('totalActivityBids');
+    if (totalBidsEl) {
+        totalBidsEl.textContent = bids.length;
+    }
+    
+    // Update unique bidders
+    const uniqueBiddersEl = document.getElementById('uniqueBidders');
+    if (uniqueBiddersEl) {
+        uniqueBiddersEl.textContent = stats.uniqueBidders || 0;
+    }
+    
+    // Update most active item
+    const mostActiveItemEl = document.getElementById('mostActiveItem');
+    if (mostActiveItemEl) {
+        mostActiveItemEl.textContent = stats.mostActiveItem || '-';
+    }
 }
 
 // Export functions for global access
@@ -1393,3 +1494,4 @@ window.refreshAdminStats = refreshAdminStats;
 window.editUserRole = editUserRole;
 window.toggleUserStatus = toggleUserStatus;
 window.goToPage = goToPage;
+window.loadAdminActivity = loadAdminActivity;
