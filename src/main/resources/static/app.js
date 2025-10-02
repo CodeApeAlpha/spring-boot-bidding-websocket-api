@@ -1001,6 +1001,18 @@ function loadAnalyticsStats() {
     });
 }
 
+// Auctions data storage
+let auctionsData = {
+    items: [],
+    bids: [],
+    bidCounts: {},
+    currentPage: 1,
+    itemsPerPage: 12,
+    searchTerm: '',
+    filter: 'all',
+    sortBy: 'bids'
+};
+
 function loadAdminAuctions() {
     const container = document.getElementById('adminAuctionsView');
     if (!container) return;
@@ -1025,72 +1037,21 @@ function loadAdminAuctions() {
             return;
         }
         
-        // Calculate bid counts for each item
-        const bidCounts = {};
+        // Store data
+        auctionsData.items = items;
+        auctionsData.bids = bids;
+        
+        // Calculate bid counts
+        auctionsData.bidCounts = {};
         bids.forEach(bid => {
-            bidCounts[bid.itemId] = (bidCounts[bid.itemId] || 0) + 1;
+            auctionsData.bidCounts[bid.itemId] = (auctionsData.bidCounts[bid.itemId] || 0) + 1;
         });
         
-        // Sort items by most bids first
-        items.sort((a, b) => (bidCounts[b.id] || 0) - (bidCounts[a.id] || 0));
+        // Setup event listeners
+        setupAuctionControls();
         
-        container.innerHTML = items.map(item => {
-            const bidCount = bidCounts[item.id] || 0;
-            const currentPrice = item.currentPrice || item.startingPrice;
-            const isActive = item.active !== false;
-            
-            return `
-                <div class="admin-auction-card ${isActive ? '' : 'inactive'}">
-                    <div class="admin-auction-header">
-                        <div class="admin-auction-badge ${isActive ? 'badge-active' : 'badge-inactive'}">
-                            ${isActive ? '<i class="fas fa-circle"></i> Active' : '<i class="fas fa-circle"></i> Inactive'}
-                        </div>
-                        <div class="admin-auction-id">ID: ${item.id}</div>
-                    </div>
-                    
-                    <div class="admin-auction-body">
-                        <h3 class="admin-auction-title">${item.name}</h3>
-                        <p class="admin-auction-description">${item.description || 'No description'}</p>
-                        
-                        <div class="admin-auction-stats">
-                            <div class="admin-auction-stat">
-                                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-                                <div class="stat-details">
-                                    <span class="stat-value">$${currentPrice.toFixed(2)}</span>
-                                    <span class="stat-label">Current Price</span>
-                                </div>
-                            </div>
-                            <div class="admin-auction-stat">
-                                <div class="stat-icon"><i class="fas fa-tag"></i></div>
-                                <div class="stat-details">
-                                    <span class="stat-value">$${item.startingPrice.toFixed(2)}</span>
-                                    <span class="stat-label">Starting Price</span>
-                                </div>
-                            </div>
-                            <div class="admin-auction-stat">
-                                <div class="stat-icon"><i class="fas fa-gavel"></i></div>
-                                <div class="stat-details">
-                                    <span class="stat-value">${bidCount}</span>
-                                    <span class="stat-label">Total Bids</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        ${bidCount > 0 ? `
-                            <div class="admin-auction-activity">
-                                <i class="fas fa-fire"></i>
-                                <span>${bidCount} ${bidCount === 1 ? 'bid' : 'bids'} placed</span>
-                            </div>
-                        ` : `
-                            <div class="admin-auction-activity inactive">
-                                <i class="fas fa-clock"></i>
-                                <span>No bids yet</span>
-                            </div>
-                        `}
-                    </div>
-                </div>
-            `;
-        }).join('');
+        // Display auctions
+        displayAuctions();
     })
     .catch(error => {
         console.error('Error loading auctions:', error);
@@ -1105,6 +1066,279 @@ function loadAdminAuctions() {
             </div>
         `;
     });
+}
+
+function setupAuctionControls() {
+    // Search
+    const searchInput = document.getElementById('auctionSearch');
+    if (searchInput && !searchInput.dataset.initialized) {
+        searchInput.dataset.initialized = 'true';
+        searchInput.addEventListener('input', (e) => {
+            auctionsData.searchTerm = e.target.value.toLowerCase();
+            auctionsData.currentPage = 1;
+            displayAuctions();
+        });
+    }
+    
+    // Filter
+    const filterSelect = document.getElementById('auctionFilter');
+    if (filterSelect && !filterSelect.dataset.initialized) {
+        filterSelect.dataset.initialized = 'true';
+        filterSelect.addEventListener('change', (e) => {
+            auctionsData.filter = e.target.value;
+            auctionsData.currentPage = 1;
+            displayAuctions();
+        });
+    }
+    
+    // Sort
+    const sortSelect = document.getElementById('auctionSort');
+    if (sortSelect && !sortSelect.dataset.initialized) {
+        sortSelect.dataset.initialized = 'true';
+        sortSelect.addEventListener('change', (e) => {
+            auctionsData.sortBy = e.target.value;
+            displayAuctions();
+        });
+    }
+    
+    // Items per page
+    const itemsPerPageSelect = document.getElementById('itemsPerPage');
+    if (itemsPerPageSelect && !itemsPerPageSelect.dataset.initialized) {
+        itemsPerPageSelect.dataset.initialized = 'true';
+        itemsPerPageSelect.addEventListener('change', (e) => {
+            auctionsData.itemsPerPage = e.target.value === 'all' ? 999999 : parseInt(e.target.value);
+            auctionsData.currentPage = 1;
+            displayAuctions();
+        });
+    }
+}
+
+function displayAuctions() {
+    const container = document.getElementById('adminAuctionsView');
+    if (!container) return;
+    
+    let filtered = [...auctionsData.items];
+    
+    // Apply search filter
+    if (auctionsData.searchTerm) {
+        filtered = filtered.filter(item => 
+            item.name.toLowerCase().includes(auctionsData.searchTerm) ||
+            (item.description && item.description.toLowerCase().includes(auctionsData.searchTerm))
+        );
+    }
+    
+    // Apply status filter
+    if (auctionsData.filter === 'active') {
+        filtered = filtered.filter(item => item.active !== false);
+    } else if (auctionsData.filter === 'inactive') {
+        filtered = filtered.filter(item => item.active === false);
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+        const bidCountA = auctionsData.bidCounts[a.id] || 0;
+        const bidCountB = auctionsData.bidCounts[b.id] || 0;
+        const priceA = a.currentPrice || a.startingPrice;
+        const priceB = b.currentPrice || b.startingPrice;
+        
+        switch (auctionsData.sortBy) {
+            case 'bids':
+                return bidCountB - bidCountA;
+            case 'price-high':
+                return priceB - priceA;
+            case 'price-low':
+                return priceA - priceB;
+            case 'name':
+                return a.name.localeCompare(b.name);
+            default:
+                return 0;
+        }
+    });
+    
+    // Update results info
+    updateResultsInfo(filtered.length, auctionsData.items.length);
+    
+    // Check if empty after filtering
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="admin-empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No Auctions Found</h3>
+                <p>Try adjusting your search or filter criteria.</p>
+            </div>
+        `;
+        document.getElementById('auctionsPagination').innerHTML = '';
+        return;
+    }
+    
+    // Pagination
+    const totalPages = Math.ceil(filtered.length / auctionsData.itemsPerPage);
+    const startIndex = (auctionsData.currentPage - 1) * auctionsData.itemsPerPage;
+    const endIndex = startIndex + auctionsData.itemsPerPage;
+    const paginatedItems = filtered.slice(startIndex, endIndex);
+    
+    // Render cards
+    container.innerHTML = paginatedItems.map(item => {
+        const bidCount = auctionsData.bidCounts[item.id] || 0;
+        const currentPrice = item.currentPrice || item.startingPrice;
+        const isActive = item.active !== false;
+        
+        return `
+            <div class="admin-auction-card ${isActive ? '' : 'inactive'}">
+                <div class="admin-auction-header">
+                    <div class="admin-auction-badge ${isActive ? 'badge-active' : 'badge-inactive'}">
+                        ${isActive ? '<i class="fas fa-circle"></i> Active' : '<i class="fas fa-circle"></i> Inactive'}
+                    </div>
+                    <div class="admin-auction-id">ID: ${item.id}</div>
+                </div>
+                
+                <div class="admin-auction-body">
+                    <h3 class="admin-auction-title">${item.name}</h3>
+                    <p class="admin-auction-description">${item.description || 'No description'}</p>
+                    
+                    <div class="admin-auction-stats">
+                        <div class="admin-auction-stat">
+                            <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-value">$${currentPrice.toFixed(2)}</span>
+                                <span class="stat-label">Current Price</span>
+                            </div>
+                        </div>
+                        <div class="admin-auction-stat">
+                            <div class="stat-icon"><i class="fas fa-tag"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-value">$${item.startingPrice.toFixed(2)}</span>
+                                <span class="stat-label">Starting Price</span>
+                            </div>
+                        </div>
+                        <div class="admin-auction-stat">
+                            <div class="stat-icon"><i class="fas fa-gavel"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-value">${bidCount}</span>
+                                <span class="stat-label">Total Bids</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${bidCount > 0 ? `
+                        <div class="admin-auction-activity">
+                            <i class="fas fa-fire"></i>
+                            <span>${bidCount} ${bidCount === 1 ? 'bid' : 'bids'} placed</span>
+                        </div>
+                    ` : `
+                        <div class="admin-auction-activity inactive">
+                            <i class="fas fa-clock"></i>
+                            <span>No bids yet</span>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Render pagination
+    renderPagination(totalPages);
+}
+
+function updateResultsInfo(showing, total) {
+    const infoElement = document.getElementById('auctionsResultsInfo');
+    if (!infoElement) return;
+    
+    if (showing === total) {
+        infoElement.innerHTML = `<span>Showing <strong>${total}</strong> ${total === 1 ? 'auction' : 'auctions'}</span>`;
+    } else {
+        infoElement.innerHTML = `<span>Showing <strong>${showing}</strong> of <strong>${total}</strong> auctions</span>`;
+    }
+}
+
+function renderPagination(totalPages) {
+    const paginationElement = document.getElementById('auctionsPagination');
+    if (!paginationElement || totalPages <= 1) {
+        paginationElement.innerHTML = '';
+        return;
+    }
+    
+    const currentPage = auctionsData.currentPage;
+    let paginationHTML = '<div class="pagination-buttons">';
+    
+    // Previous button
+    paginationHTML += `
+        <button class="pagination-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                onclick="goToPage(${currentPage - 1})" 
+                ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+    `;
+    
+    // Page numbers
+    paginationHTML += '<div class="pagination-numbers">';
+    
+    // Always show first page
+    if (currentPage > 3) {
+        paginationHTML += `<button class="pagination-num" onclick="goToPage(1)">1</button>`;
+        if (currentPage > 4) {
+            paginationHTML += '<span class="pagination-ellipsis">...</span>';
+        }
+    }
+    
+    // Show pages around current
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        paginationHTML += `
+            <button class="pagination-num ${i === currentPage ? 'active' : ''}" 
+                    onclick="goToPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+    
+    // Always show last page
+    if (currentPage < totalPages - 2) {
+        if (currentPage < totalPages - 3) {
+            paginationHTML += '<span class="pagination-ellipsis">...</span>';
+        }
+        paginationHTML += `<button class="pagination-num" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    paginationHTML += '</div>';
+    
+    // Next button
+    paginationHTML += `
+        <button class="pagination-btn ${currentPage === totalPages ? 'disabled' : ''}" 
+                onclick="goToPage(${currentPage + 1})" 
+                ${currentPage === totalPages ? 'disabled' : ''}>
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
+    
+    paginationHTML += '</div>';
+    paginationElement.innerHTML = paginationHTML;
+}
+
+function goToPage(page) {
+    const totalPages = Math.ceil(
+        auctionsData.items.filter(item => {
+            // Apply current filters to calculate total pages
+            let matches = true;
+            if (auctionsData.searchTerm) {
+                matches = item.name.toLowerCase().includes(auctionsData.searchTerm) ||
+                         (item.description && item.description.toLowerCase().includes(auctionsData.searchTerm));
+            }
+            if (matches && auctionsData.filter === 'active') {
+                matches = item.active !== false;
+            } else if (matches && auctionsData.filter === 'inactive') {
+                matches = item.active === false;
+            }
+            return matches;
+        }).length / auctionsData.itemsPerPage
+    );
+    
+    if (page < 1 || page > totalPages) return;
+    
+    auctionsData.currentPage = page;
+    displayAuctions();
+    
+    // Scroll to top of auctions section
+    document.getElementById('adminAuctionsView').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function loadAdminActivity() {
@@ -1154,3 +1388,4 @@ window.refreshUsers = refreshUsers;
 window.refreshAdminStats = refreshAdminStats;
 window.editUserRole = editUserRole;
 window.toggleUserStatus = toggleUserStatus;
+window.goToPage = goToPage;

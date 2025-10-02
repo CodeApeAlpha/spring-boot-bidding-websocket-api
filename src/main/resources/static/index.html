@@ -600,9 +600,44 @@
                                 <p>View and manage all auction items</p>
                             </div>
                         </div>
+                        
+                        <!-- Auctions Controls -->
+                        <div class="admin-auctions-controls">
+                            <div class="admin-search-bar">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="auctionSearch" placeholder="Search by name or description..." />
+                            </div>
+                            <div class="admin-filter-bar">
+                                <select id="auctionFilter" class="admin-select">
+                                    <option value="all">All Auctions</option>
+                                    <option value="active">Active Only</option>
+                                    <option value="inactive">Inactive Only</option>
+                                </select>
+                                <select id="auctionSort" class="admin-select">
+                                    <option value="bids">Most Bids First</option>
+                                    <option value="price-high">Highest Price</option>
+                                    <option value="price-low">Lowest Price</option>
+                                    <option value="name">Name (A-Z)</option>
+                                </select>
+                                <select id="itemsPerPage" class="admin-select">
+                                    <option value="6">6 per page</option>
+                                    <option value="12" selected>12 per page</option>
+                                    <option value="24">24 per page</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Info -->
+                        <div id="auctionsResultsInfo" class="admin-results-info"></div>
+                        
+                        <!-- Auctions Grid -->
                         <div id="adminAuctionsView" class="admin-auctions-grid">
                             <!-- Will be populated dynamically -->
                         </div>
+                        
+                        <!-- Pagination -->
+                        <div id="auctionsPagination" class="admin-pagination"></div>
                     </div>
 
                     <!-- Live Activity Section -->
