@@ -495,7 +495,134 @@
 
     <!-- APP VIEW (Shown when authenticated) -->
     <div id="appView" class="app-view">
-        <main class="app-container">
+        <!-- Admin Dashboard (Replaces entire layout for ADMIN role) -->
+        <div id="adminDashboard" class="admin-dashboard-wrapper" style="display: none;">
+            <div class="admin-dashboard-container">
+                <!-- Admin Sidebar -->
+                <aside class="admin-sidebar">
+                    <div class="admin-sidebar-header">
+                        <div class="admin-logo">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3>Admin Panel</h3>
+                        <p class="admin-subtitle">System Management</p>
+                    </div>
+
+                    <nav class="admin-nav">
+                        <a href="#" class="admin-nav-item active" onclick="showAdminSection('overview'); return false;">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Overview</span>
+                        </a>
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection('users'); return false;">
+                            <i class="fas fa-users"></i>
+                            <span>User Management</span>
+                        </a>
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection('analytics'); return false;">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Analytics</span>
+                        </a>
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection('auctions'); return false;">
+                            <i class="fas fa-gavel"></i>
+                            <span>Auctions</span>
+                        </a>
+                        <a href="#" class="admin-nav-item" onclick="showAdminSection('activity'); return false;">
+                            <i class="fas fa-stream"></i>
+                            <span>Live Activity</span>
+                        </a>
+                    </nav>
+
+                    <div class="admin-sidebar-footer">
+                        <div class="admin-user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <div>
+                                <strong id="adminUsername">Admin</strong>
+                                <small>System Administrator</small>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Admin Main Content -->
+                <main class="admin-main">
+                    <!-- Overview Section -->
+                    <div id="adminSectionOverview" class="admin-section active">
+                        <div class="admin-content-header">
+                            <div>
+                                <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
+                                <p>Quick glance at your platform metrics</p>
+                            </div>
+                            <button class="btn btn-outline btn-sm" onclick="refreshAdminStats()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="overviewStatsGrid" class="admin-stats-grid">
+                            <p>Loading overview...</p>
+                        </div>
+                    </div>
+
+                    <!-- User Management Section -->
+                    <div id="adminSectionUsers" class="admin-section" style="display: none;">
+                        <div class="admin-content-header">
+                            <div>
+                                <h2><i class="fas fa-users"></i> User Management</h2>
+                                <p>Manage user accounts and permissions</p>
+                            </div>
+                            <button class="btn btn-outline btn-sm" onclick="refreshUsers()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="usersTable" class="admin-table-container">
+                            <p>Loading users...</p>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div id="adminSectionAnalytics" class="admin-section" style="display: none;">
+                        <div class="admin-content-header">
+                            <div>
+                                <h2><i class="fas fa-chart-line"></i> Platform Analytics</h2>
+                                <p>Detailed statistics and insights</p>
+                            </div>
+                            <button class="btn btn-outline btn-sm" onclick="refreshAdminStats()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="analyticsStatsGrid" class="admin-stats-grid">
+                            <p>Loading analytics...</p>
+                        </div>
+                    </div>
+
+                    <!-- Auctions Section -->
+                    <div id="adminSectionAuctions" class="admin-section" style="display: none;">
+                        <div class="admin-content-header">
+                            <div>
+                                <h2><i class="fas fa-gavel"></i> Auctions Monitoring</h2>
+                                <p>View and manage all auction items</p>
+                            </div>
+                        </div>
+                        <div id="adminAuctionsView" class="admin-auctions-grid">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Live Activity Section -->
+                    <div id="adminSectionActivity" class="admin-section" style="display: none;">
+                        <div class="admin-content-header">
+                            <div>
+                                <h2><i class="fas fa-stream"></i> Live Activity Feed</h2>
+                                <p>Real-time bidding activity across the platform</p>
+                            </div>
+                        </div>
+                        <div id="adminLiveFeed" class="admin-live-feed">
+                            <!-- Will show live bids -->
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Regular App Layout (for BUYER/SELLER roles) -->
+        <main class="app-container" id="regularAppLayout">
             <!-- Left Sidebar -->
             <aside class="sidebar">
                 <!-- Place Bid Card -->
@@ -537,130 +664,6 @@
 
             <!-- Main Content Area -->
             <section class="main-content">
-                <!-- Admin Dashboard (Only for ADMIN role) -->
-                <div id="adminDashboard" class="admin-dashboard-container" style="display: none;">
-                    <!-- Admin Sidebar -->
-                    <aside class="admin-sidebar">
-                        <div class="admin-sidebar-header">
-                            <div class="admin-logo">
-                                <i class="fas fa-user-shield"></i>
-                            </div>
-                            <h3>Admin Panel</h3>
-                            <p class="admin-subtitle">System Management</p>
-                        </div>
-
-                        <nav class="admin-nav">
-                            <a href="#" class="admin-nav-item active" onclick="showAdminSection('overview'); return false;">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span>Overview</span>
-                            </a>
-                            <a href="#" class="admin-nav-item" onclick="showAdminSection('users'); return false;">
-                                <i class="fas fa-users"></i>
-                                <span>User Management</span>
-                            </a>
-                            <a href="#" class="admin-nav-item" onclick="showAdminSection('analytics'); return false;">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Analytics</span>
-                            </a>
-                            <a href="#" class="admin-nav-item" onclick="showAdminSection('auctions'); return false;">
-                                <i class="fas fa-gavel"></i>
-                                <span>Auctions</span>
-                            </a>
-                            <a href="#" class="admin-nav-item" onclick="showAdminSection('activity'); return false;">
-                                <i class="fas fa-stream"></i>
-                                <span>Live Activity</span>
-                            </a>
-                        </nav>
-
-                        <div class="admin-sidebar-footer">
-                            <div class="admin-user-info">
-                                <i class="fas fa-user-circle"></i>
-                                <div>
-                                    <strong id="adminUsername">Admin</strong>
-                                    <small>System Administrator</small>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
-
-                    <!-- Admin Main Content -->
-                    <main class="admin-main">
-                        <!-- Overview Section -->
-                        <div id="adminSectionOverview" class="admin-section active">
-                            <div class="admin-content-header">
-                                <div>
-                                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
-                                    <p>Quick glance at your platform metrics</p>
-                                </div>
-                                <button class="btn btn-outline btn-sm" onclick="refreshAdminStats()">
-                                    <i class="fas fa-sync-alt"></i> Refresh
-                                </button>
-                            </div>
-                            <div id="overviewStatsGrid" class="admin-stats-grid">
-                                <p>Loading overview...</p>
-                            </div>
-                        </div>
-
-                        <!-- User Management Section -->
-                        <div id="adminSectionUsers" class="admin-section" style="display: none;">
-                            <div class="admin-content-header">
-                                <div>
-                                    <h2><i class="fas fa-users"></i> User Management</h2>
-                                    <p>Manage user accounts and permissions</p>
-                                </div>
-                                <button class="btn btn-outline btn-sm" onclick="refreshUsers()">
-                                    <i class="fas fa-sync-alt"></i> Refresh
-                                </button>
-                            </div>
-                            <div id="usersTable" class="admin-table-container">
-                                <p>Loading users...</p>
-                            </div>
-                        </div>
-
-                        <!-- Analytics Section -->
-                        <div id="adminSectionAnalytics" class="admin-section" style="display: none;">
-                            <div class="admin-content-header">
-                                <div>
-                                    <h2><i class="fas fa-chart-line"></i> Platform Analytics</h2>
-                                    <p>Detailed statistics and insights</p>
-                                </div>
-                                <button class="btn btn-outline btn-sm" onclick="refreshAdminStats()">
-                                    <i class="fas fa-sync-alt"></i> Refresh
-                                </button>
-                            </div>
-                            <div id="analyticsStatsGrid" class="admin-stats-grid">
-                                <p>Loading analytics...</p>
-                            </div>
-                        </div>
-
-                        <!-- Auctions Section -->
-                        <div id="adminSectionAuctions" class="admin-section" style="display: none;">
-                            <div class="admin-content-header">
-                                <div>
-                                    <h2><i class="fas fa-gavel"></i> Auctions Monitoring</h2>
-                                    <p>View and manage all auction items</p>
-                                </div>
-                            </div>
-                            <div id="adminAuctionsView" class="admin-auctions-grid">
-                                <!-- Will be populated dynamically -->
-                            </div>
-                        </div>
-
-                        <!-- Live Activity Section -->
-                        <div id="adminSectionActivity" class="admin-section" style="display: none;">
-                            <div class="admin-content-header">
-                                <div>
-                                    <h2><i class="fas fa-stream"></i> Live Activity Feed</h2>
-                                    <p>Real-time bidding activity across the platform</p>
-                                </div>
-                            </div>
-                            <div id="adminLiveFeed" class="admin-live-feed">
-                                <!-- Will show live bids -->
-                            </div>
-                        </div>
-                    </main>
-                </div>
-
                 <!-- Stats Cards -->
                 <div id="statsSection" class="stats-grid">
                     <div class="stat-card">

@@ -144,16 +144,16 @@ function setAuthenticatedUser(user, token) {
         showToast('Welcome Seller! You can manage your auction items here.', 'info');
         
     } else if (user.role === 'ADMIN') {
-        // ADMIN: Show admin dashboard
-        placeBidSection.style.display = 'none';
-        liveBidsSection.style.display = 'none';
-        statsSection.style.display = 'none';
-        auctionsSection.style.display = 'none';
+        // ADMIN: Hide regular layout, show admin dashboard
+        const regularLayout = document.getElementById('regularAppLayout');
+        if (regularLayout) {
+            regularLayout.style.display = 'none';
+        }
         
         // Show admin dashboard
         const adminDashboard = document.getElementById('adminDashboard');
         if (adminDashboard) {
-            adminDashboard.style.display = 'flex';
+            adminDashboard.style.display = 'block';
             
             // Set admin username
             const adminUsernameElem = document.getElementById('adminUsername');
@@ -165,6 +165,9 @@ function setAuthenticatedUser(user, token) {
         }
         
         showToast('Welcome Admin! Full system management access.', 'info');
+        
+        // Don't load regular buyer/seller data
+        return;
     }
     
     // Load auction data
@@ -178,6 +181,16 @@ function setUnauthenticatedUser() {
     
     document.getElementById('authSection').style.display = 'flex';
     document.getElementById('userSection').style.display = 'none';
+    
+    // Hide admin dashboard and show regular layout
+    const adminDashboard = document.getElementById('adminDashboard');
+    const regularLayout = document.getElementById('regularAppLayout');
+    if (adminDashboard) {
+        adminDashboard.style.display = 'none';
+    }
+    if (regularLayout) {
+        regularLayout.style.display = 'grid';
+    }
     
     // Show landing view
     showLandingView();
