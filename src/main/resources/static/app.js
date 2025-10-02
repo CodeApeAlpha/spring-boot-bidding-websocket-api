@@ -1,4 +1,4 @@
-/* Modern Bidding Platform with Authentication */
+/* Modern Bidding Platform with Authentication and View Switching */
 let stompClient = null;
 let currentItemId = null;
 let currentBidSubscription = null;
@@ -34,7 +34,10 @@ function setupEventListeners() {
     document.getElementById('registerForm').addEventListener('submit', handleRegister);
     
     // Refresh button
-    document.getElementById('refreshAuctions').addEventListener('click', loadAuctions);
+    const refreshBtn = document.getElementById('refreshAuctions');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadAuctions);
+    }
     
     // Modal close on outside click
     document.querySelectorAll('.modal').forEach(modal => {
@@ -44,6 +47,26 @@ function setupEventListeners() {
             }
         });
     });
+}
+
+// View Switching Functions
+function showLandingView() {
+    document.body.classList.remove('app-mode');
+    document.getElementById('landingView').style.display = 'block';
+    document.getElementById('appView').style.display = 'none';
+    document.getElementById('landingNavLinks').style.display = 'flex';
+    document.getElementById('status').style.display = 'none';
+}
+
+function showAppView() {
+    document.body.classList.add('app-mode');
+    document.getElementById('landingView').style.display = 'none';
+    document.getElementById('appView').style.display = 'block';
+    document.getElementById('landingNavLinks').style.display = 'none';
+    document.getElementById('status').style.display = 'flex';
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Authentication Functions
@@ -78,6 +101,7 @@ function setAuthenticatedUser(user, token) {
     currentUser = user;
     authToken = token;
     
+    // Update UI
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('userSection').style.display = 'flex';
     document.getElementById('userName').textContent = user.firstName + ' ' + user.lastName;
@@ -86,6 +110,9 @@ function setAuthenticatedUser(user, token) {
     const roleElement = document.getElementById('userRole');
     roleElement.textContent = user.role;
     roleElement.className = 'role-badge role-' + user.role.toLowerCase();
+    
+    // Switch to app view
+    showAppView();
     
     // Get UI sections
     const placeBidSection = document.getElementById('placeBidSection');
@@ -105,10 +132,6 @@ function setAuthenticatedUser(user, token) {
         document.getElementById('bidAmount').disabled = false;
         document.getElementById('itemSelect').disabled = false;
         
-        const bidBtn = document.getElementById('placeBidBtn');
-        bidBtn.textContent = 'Place Bid';
-        bidBtn.className = 'btn btn-primary';
-        
         loadAllRecentBids();
         
     } else if (user.role === 'SELLER') {
@@ -118,21 +141,23 @@ function setAuthenticatedUser(user, token) {
         statsSection.style.display = 'grid';
         auctionsSection.style.display = 'block';
         
-        // Show seller-specific message
         showToast('Welcome Seller! You can manage your auction items here.', 'info');
         
     } else if (user.role === 'ADMIN') {
         // ADMIN: Show stats and user management view
         placeBidSection.style.display = 'none';
-        liveBidsSection.style.display = 'block'; // Can see all activity
+        liveBidsSection.style.display = 'block';
         statsSection.style.display = 'grid';
         auctionsSection.style.display = 'block';
         
-        // Show admin-specific message
         showToast('Welcome Admin! System monitoring and user management access.', 'info');
         
-        loadAllRecentBids(); // Admin can see all activity
+        loadAllRecentBids();
     }
+    
+    // Load auction data
+    loadAuctions();
+    updateStats();
 }
 
 function setUnauthenticatedUser() {
@@ -142,19 +167,8 @@ function setUnauthenticatedUser() {
     document.getElementById('authSection').style.display = 'flex';
     document.getElementById('userSection').style.display = 'none';
     
-    // Hide all role-specific sections for unauthenticated users
-    const placeBidSection = document.getElementById('placeBidSection');
-    const liveBidsSection = document.getElementById('liveBidsSection');
-    const statsSection = document.getElementById('statsSection');
-    const auctionsSection = document.getElementById('auctionsSection');
-    
-    placeBidSection.style.display = 'none';
-    liveBidsSection.style.display = 'none';
-    statsSection.style.display = 'none';
-    auctionsSection.style.display = 'none';
-    
-    // Show login message in main area
-    showToast('Please login to access the auction platform', 'info');
+    // Show landing view
+    showLandingView();
 }
 
 async function handleLogin(e) {
@@ -177,7 +191,7 @@ async function handleLogin(e) {
             localStorage.setItem('authToken', authResponse.token);
             setAuthenticatedUser(authResponse, authResponse.token);
             closeModal('loginModal');
-            showToast('Login successful!', 'success');
+            showToast('Welcome back to BidHub!', 'success');
         } else {
             const error = await response.json();
             showToast(error.message || 'Login failed', 'error');
@@ -214,7 +228,7 @@ async function handleRegister(e) {
             localStorage.setItem('authToken', authResponse.token);
             setAuthenticatedUser(authResponse, authResponse.token);
             closeModal('registerModal');
-            showToast('Registration successful!', 'success');
+            showToast('Welcome to BidHub! Your account has been created.', 'success');
         } else {
             const error = await response.json();
             showToast(error.message || 'Registration failed', 'error');
@@ -228,12 +242,14 @@ async function handleRegister(e) {
 function logout() {
     localStorage.removeItem('authToken');
     setUnauthenticatedUser();
-    showToast('Logged out successfully', 'info');
+    showToast('You have been logged out. See you soon!', 'info');
 }
 
 // WebSocket Functions
 function setStatus(connected) {
-  const el = document.getElementById('status');
+    const el = document.getElementById('status');
+    if (!el) return;
+    
     const icon = el.querySelector('i');
     const text = el.querySelector('span');
     
@@ -253,16 +269,16 @@ function connect() {
         return;
     }
     
-  const socket = new SockJS('/ws');
-  stompClient = Stomp.over(socket);
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
     
     stompClient.connect({}, function (frame) {
-    setStatus(true);
+        setStatus(true);
         console.log('Connected: ' + frame);
 
-        // Subscribe to general auction updates for shared live bids feed
-    stompClient.subscribe('/topic/auctions', function (message) {
-      const payload = JSON.parse(message.body);
+        // Subscribe to general auction updates
+        stompClient.subscribe('/topic/auctions', function (message) {
+            const payload = JSON.parse(message.body);
             console.log('Received auction update:', payload);
             if (payload.type === 'BID_UPDATE' || payload.type === 'NEW_BID') {
                 addBidToSharedFeed(payload.data);
@@ -273,11 +289,10 @@ function connect() {
             }
         });
 
-        loadAuctions();
-        updateStats();
-        
-        // Only load bids if user is authenticated
+        // Load auctions if authenticated
         if (currentUser) {
+            loadAuctions();
+            updateStats();
             loadAllRecentBids();
         }
     }, function(error) {
@@ -285,14 +300,14 @@ function connect() {
         setStatus(false);
         // Retry connection after 5 seconds
         setTimeout(connect, 5000);
-  });
+    });
 }
 
 function disconnect() {
     if (stompClient) {
         stompClient.disconnect();
     }
-  setStatus(false);
+    setStatus(false);
 }
 
 // API Functions
@@ -310,33 +325,37 @@ async function loadAuctions() {
 }
 
 function displayAuctions(auctions) {
-  const container = document.getElementById('auctions');
-  container.innerHTML = '';
+    const container = document.getElementById('auctions');
+    if (!container) return;
     
-  auctions.forEach(auction => {
-    const div = document.createElement('div');
+    container.innerHTML = '';
+    
+    auctions.forEach(auction => {
+        const div = document.createElement('div');
         div.className = 'auction-item fade-in';
-    div.innerHTML = `
-      <h3>${auction.name}</h3>
-      <p class="meta">${auction.description || ''}</p>
+        div.innerHTML = `
+            <h3>${auction.name}</h3>
+            <p class="meta">${auction.description || ''}</p>
             <div class="price">$${auction.currentHighestBid.toFixed(2)}</div>
             <div class="time">Ends: ${new Date(auction.endTime).toLocaleString()}</div>
-      <div class="row">
+            <div class="row">
                 <button class="btn btn-outline btn-sm" onclick="loadBids(${auction.id})">
                     <i class="fas fa-eye"></i>
                     View Bids
                 </button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
+            </div>
+        `;
+        container.appendChild(div);
+    });
 }
 
 function populateItemSelect(auctions) {
-  const select = document.getElementById('itemSelect');
+    const select = document.getElementById('itemSelect');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">Choose an item...</option>';
-  auctions.forEach(a => {
-    const opt = document.createElement('option');
+    auctions.forEach(a => {
+        const opt = document.createElement('option');
         opt.value = a.id;
         opt.textContent = a.name;
         select.appendChild(opt);
@@ -351,8 +370,8 @@ async function placeBid() {
         return;
     }
     
-  const itemId = document.getElementById('itemSelect').value;
-  const amount = document.getElementById('bidAmount').value;
+    const itemId = document.getElementById('itemSelect').value;
+    const amount = document.getElementById('bidAmount').value;
     
     if (!itemId || !amount) {
         showToast('Please select an item and enter a bid amount', 'warning');
@@ -396,7 +415,7 @@ async function loadBids(itemId) {
         return;
     }
     
-  currentItemId = parseInt(itemId);
+    currentItemId = parseInt(itemId);
     try {
         const response = await fetch(`/api/bids/item/${itemId}`);
         const bids = await response.json();
@@ -408,20 +427,24 @@ async function loadBids(itemId) {
 }
 
 function displayBids(bids) {
-  const container = document.getElementById('bids');
-  container.innerHTML = '';
-  bids.forEach(bid => addBidToHtml(container, bid, false));
+    const container = document.getElementById('bids');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    bids.forEach(bid => addBidToHtml(container, bid, false));
 }
 
 async function loadAllRecentBids() {
     if (!currentUser) {
-        return; // Don't load bids if not authenticated
+        return;
     }
     
     try {
         const response = await fetch('/api/bids');
         const bids = await response.json();
         const container = document.getElementById('bids');
+        if (!container) return;
+        
         container.innerHTML = '';
         
         // Sort by timestamp descending (newest first)
@@ -434,9 +457,9 @@ async function loadAllRecentBids() {
 }
 
 function addBidToHtml(container, bid, prepend = true) {
-  const div = document.createElement('div');
-  div.className = 'bid-item' + (bid.isWinning ? ' winning-bid' : '');
-  div.innerHTML = `
+    const div = document.createElement('div');
+    div.className = 'bid-item' + (bid.isWinning ? ' winning-bid' : '');
+    div.innerHTML = `
         <div>
             <div class="bid-amount">$${bid.amount.toFixed(2)}</div>
             <div class="bid-bidder">by ${bid.bidderName}</div>
@@ -453,8 +476,9 @@ function addBidToHtml(container, bid, prepend = true) {
 }
 
 function addBidToSharedFeed(bid) {
-  const container = document.getElementById('bids');
-  addBidToHtml(container, bid, true);
+    const container = document.getElementById('bids');
+    if (!container) return;
+    addBidToHtml(container, bid, true);
 }
 
 function updateAuctionDisplay(bid) {
@@ -483,11 +507,15 @@ async function updateStats() {
         const bids = await bidsResponse.json();
         const items = await itemsResponse.json();
         
-        document.getElementById('totalBids').textContent = bids.length;
-        document.getElementById('activeAuctions').textContent = items.length;
+        const totalBidsEl = document.getElementById('totalBids');
+        const activeAuctionsEl = document.getElementById('activeAuctions');
+        const highestBidEl = document.getElementById('highestBid');
+        
+        if (totalBidsEl) totalBidsEl.textContent = bids.length;
+        if (activeAuctionsEl) activeAuctionsEl.textContent = items.length;
         
         const highestBid = Math.max(...bids.map(b => b.amount), 0);
-        document.getElementById('highestBid').textContent = `$${highestBid.toFixed(2)}`;
+        if (highestBidEl) highestBidEl.textContent = `$${highestBid.toFixed(2)}`;
     } catch (error) {
         console.error('Error updating stats:', error);
     }
@@ -542,18 +570,6 @@ function getToastIcon(type) {
         info: 'fas fa-info-circle'
     };
     return icons[type] || icons.info;
-}
-
-// Utility Functions
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(amount);
-}
-
-function formatTime(date) {
-    return new Date(date).toLocaleString();
 }
 
 // Export functions for global access

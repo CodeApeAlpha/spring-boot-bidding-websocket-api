@@ -68,7 +68,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                     .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/", "/landing.html", "/landing.css", "/app.html", "/styles.css", "/app.js", "/favicon.ico").permitAll()
+                    .requestMatchers("/", "/index.html", "/index.css", "/app.html", "/styles.css", "/app.js", "/favicon.ico").permitAll()
                     .requestMatchers("/websocket-test.html").permitAll()
                     .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
                     .requestMatchers("/api/items/**").permitAll()

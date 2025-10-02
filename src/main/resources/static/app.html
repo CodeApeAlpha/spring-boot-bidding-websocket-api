@@ -2,235 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Bidding Platform</title>
-    <link rel="stylesheet" href="/styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <meta http-equiv="refresh" content="0; url=/">
+    <title>Redirecting to BidHub...</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%);
+            color: white;
+        }
+        .redirect-message {
+            text-align: center;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-spinner"></div>
-        <p>Connecting to Live Bidding...</p>
+    <div class="redirect-message">
+        <div class="spinner"></div>
+        <p>Redirecting to BidHub...</p>
+        <p><a href="/" style="color: #3b82f6;">Click here if not redirected automatically</a></p>
     </div>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="brand">
-            <div class="brand-logo">
-                <i class="fas fa-gavel"></i>
-            </div>
-            <div class="brand-title">Live Bidding</div>
-        </div>
-        
-        <div class="header-actions">
-            <div id="status" class="status disconnected">
-                <i class="fas fa-circle"></i>
-                <span>Disconnected</span>
-            </div>
-            
-            <!-- Auth Section -->
-            <div id="authSection" class="auth-section">
-                <button id="loginBtn" class="btn btn-outline">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
-                </button>
-                <button id="registerBtn" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i>
-                    Register
-                </button>
-            </div>
-            
-            <!-- User Section -->
-            <div id="userSection" class="user-section" style="display: none;">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="user-details">
-                        <span id="userName" class="user-name">John Doe</span>
-                        <span id="userRole" class="user-role">User</span>
-                    </div>
-                </div>
-                <button id="logoutBtn" class="btn btn-outline btn-sm">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container">
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <!-- Place Bid Card -->
-            <div id="placeBidSection" class="card">
-                <div class="section-title">
-                    <h2><i class="fas fa-hammer"></i> Place a Bid</h2>
-                </div>
-                <div class="form-group">
-                    <label for="itemSelect">Select Item</label>
-                    <select id="itemSelect" class="input">
-                        <option value="">Choose an item...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="bidAmount">Bid Amount</label>
-                    <div class="input-group">
-                        <span class="input-prefix">$</span>
-                        <input id="bidAmount" class="input" type="number" placeholder="0.00" step="0.01" min="0" />
-                    </div>
-                </div>
-                <button id="placeBidBtn" class="btn btn-primary btn-full" onclick="placeBid()">
-                    <i class="fas fa-gavel"></i>
-                    Place Bid
-                </button>
-            </div>
-
-            <!-- Live Bids Feed -->
-            <div id="liveBidsSection" class="card">
-                <div class="section-title">
-                    <h2><i class="fas fa-bolt"></i> Live Bids</h2>
-                    <div class="live-indicator">
-                        <div class="pulse"></div>
-                        <span>LIVE</span>
-                    </div>
-                </div>
-                <div id="bids" class="bids-list"></div>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <section class="main-content">
-            <!-- Stats Cards -->
-            <div id="statsSection" class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-gavel"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="totalBids">0</span>
-                        <span class="stat-label">Total Bids</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="activeAuctions">0</span>
-                        <span class="stat-label">Active Auctions</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="highestBid">$0</span>
-                        <span class="stat-label">Highest Bid</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Auctions -->
-            <div id="auctionsSection" class="card">
-                <div class="section-title">
-                    <h2><i class="fas fa-list"></i> Active Auctions</h2>
-                    <button id="refreshAuctions" class="btn btn-outline btn-sm">
-                        <i class="fas fa-sync-alt"></i>
-                        Refresh
-                    </button>
-                </div>
-                <div id="auctions" class="auction-grid"></div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
-                <button class="modal-close" onclick="closeModal('loginModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="loginForm" class="modal-form">
-                <div class="form-group">
-                    <label for="loginUsername">Username</label>
-                    <input id="loginUsername" class="input" type="text" placeholder="Enter your username" required />
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input id="loginPassword" class="input" type="password" placeholder="Enter your password" required />
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
-                </button>
-            </form>
-            <div class="modal-footer">
-                <p>Don't have an account? <a href="#" onclick="showModal('registerModal')">Register here</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Register Modal -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-user-plus"></i> Register</h2>
-                <button class="modal-close" onclick="closeModal('registerModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="registerForm" class="modal-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="registerFirstName">First Name</label>
-                        <input id="registerFirstName" class="input" type="text" placeholder="First name" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="registerLastName">Last Name</label>
-                        <input id="registerLastName" class="input" type="text" placeholder="Last name" required />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="registerUsername">Username</label>
-                    <input id="registerUsername" class="input" type="text" placeholder="Choose a username" required />
-                </div>
-                <div class="form-group">
-                    <label for="registerEmail">Email</label>
-                    <input id="registerEmail" class="input" type="email" placeholder="Enter your email" required />
-                </div>
-                <div class="form-group">
-                    <label for="registerPassword">Password</label>
-                    <input id="registerPassword" class="input" type="password" placeholder="Create a password" required />
-                </div>
-                <div class="form-group">
-                    <label for="registerRole">Account Type</label>
-                    <select id="registerRole" class="input" required>
-                        <option value="BUYER">Buyer - Place bids on auction items</option>
-                        <option value="SELLER">Seller - Create and manage auctions</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">
-                    <i class="fas fa-user-plus"></i>
-                    Create Account
-                </button>
-            </form>
-            <div class="modal-footer">
-                <p>Already have an account? <a href="#" onclick="showModal('loginModal')">Login here</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <script src="/app.js"></script>
+    <script>
+        window.location.href = '/';
+    </script>
 </body>
 </html>

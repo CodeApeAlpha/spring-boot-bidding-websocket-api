@@ -8,17 +8,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Web MVC Configuration
  * 
- * Configures the landing page as the default home page.
- * When users visit http://localhost:8080/, they will see landing.html
+ * Configures the home page.
+ * When users visit http://localhost:8080/, they will see index.html
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // Set landing page as the home page (highest priority)
+        // Set index.html as the home page (highest priority)
         registry.addViewController("/")
-                .setViewName("forward:/landing.html");
+                .setViewName("forward:/index.html");
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
     }
 }
