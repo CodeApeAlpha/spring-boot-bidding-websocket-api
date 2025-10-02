@@ -948,7 +948,6 @@ body::before {
   width: 100%;
   height: calc(100vh - 70px);
   overflow: hidden;
-  margin-top: 70px; /* Push down below navbar */
 }
 
 /* Admin Sidebar */
