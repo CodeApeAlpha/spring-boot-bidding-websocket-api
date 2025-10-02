@@ -658,13 +658,13 @@ function createPreviewBidElement(bid, isNew) {
     
     div.innerHTML = `
         <div class="preview-bid-header">
-            ${isNew ? '<span class="preview-bid-badge">🔴 NEW BID</span>' : '<span class="preview-bid-badge">BID</span>'}
+            ${isNew ? '<span class="preview-bid-badge">🔴 NEW BID</span>' : '<span class="preview-bid-badge">💎 BID</span>'}
             <span class="preview-bid-time">${getRelativeTime(bid.timestamp)}</span>
         </div>
         <div class="preview-bid-content">
             <div class="preview-bid-item-name">${itemName}</div>
             <div class="preview-bid-amount">$${bid.amount.toFixed(2)}</div>
-            <div class="preview-bid-bidder">by ${anonymizeBidder(bid.bidderName)}</div>
+            <div class="preview-bid-bidder">👤 ${anonymizeBidder(bid.bidderName)}</div>
         </div>
     `;
     

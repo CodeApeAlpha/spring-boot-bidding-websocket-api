@@ -192,31 +192,50 @@
 
         <!-- Live Bids Preview Section -->
         <section id="live-bids-preview" class="live-preview">
-            <div class="container">
-                <div class="live-preview-header">
-                    <h2 class="section-title">
-                        <span class="live-pulse-dot"></span>
-                        Live Auction Activity
-                    </h2>
-                    <div class="live-status-badge">
-                        <i class="fas fa-circle"></i>
-                        <span id="activeBidders">3 people</span> bidding now
+            <div class="live-preview-banner">
+                <div class="banner-content">
+                    <div class="banner-left">
+                        <h2 class="banner-title">
+                            <span class="live-pulse-dot"></span>
+                            LIVE AUCTION ACTIVITY
+                        </h2>
+                        <p class="banner-subtitle">Real bids happening right now</p>
+                    </div>
+                    <div class="banner-right">
+                        <div class="live-status-badge-large">
+                            <i class="fas fa-circle"></i>
+                            <div class="status-text">
+                                <span class="status-number" id="activeBidders">3</span>
+                                <span class="status-label">BIDDING NOW</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <p class="section-subtitle">Watch real-time bids from our active auction community</p>
-                
-                <div id="liveBidsPreviewContainer" class="live-bids-ticker">
-                    <!-- Dynamic bids will be inserted here -->
-                    <div class="preview-bid-placeholder">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Connecting to live feed...</p>
+            </div>
+            
+            <div class="live-bids-showcase">
+                <div class="container">
+                    <div id="liveBidsPreviewContainer" class="live-bids-grid">
+                        <!-- Dynamic bids will be inserted here -->
+                        <div class="preview-bid-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Connecting to live feed...</p>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="live-preview-cta">
-                    <p>See something you like?</p>
-                    <button class="btn-primary btn-large" onclick="showModal('registerModal')">
-                        <i class="fas fa-rocket"></i> Join the Action
+            </div>
+            
+            <div class="live-preview-cta-section">
+                <div class="cta-content">
+                    <div class="cta-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="cta-text">
+                        <h3>Don't Miss Out on the Action!</h3>
+                        <p>Join thousands of users winning amazing deals in real-time</p>
+                    </div>
+                    <button class="btn-cta-large" onclick="showModal('registerModal')">
+                        <i class="fas fa-rocket"></i> Start Bidding Now
                     </button>
                 </div>
             </div>
