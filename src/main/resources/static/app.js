@@ -153,7 +153,14 @@ function setAuthenticatedUser(user, token) {
         // Show admin dashboard
         const adminDashboard = document.getElementById('adminDashboard');
         if (adminDashboard) {
-            adminDashboard.style.display = 'block';
+            adminDashboard.style.display = 'flex';
+            
+            // Set admin username
+            const adminUsernameElem = document.getElementById('adminUsername');
+            if (adminUsernameElem) {
+                adminUsernameElem.textContent = user.username;
+            }
+            
             loadAdminData();
         }
         
@@ -252,7 +259,7 @@ function logout() {
 
 // WebSocket Functions
 function setStatus(connected) {
-    const el = document.getElementById('status');
+  const el = document.getElementById('status');
     if (!el) return;
     
     const icon = el.querySelector('i');
@@ -274,16 +281,16 @@ function connect() {
         return;
     }
     
-    const socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
+  const socket = new SockJS('/ws');
+  stompClient = Stomp.over(socket);
     
     stompClient.connect({}, function (frame) {
-        setStatus(true);
+    setStatus(true);
         console.log('Connected: ' + frame);
 
         // Subscribe to general auction updates
-        stompClient.subscribe('/topic/auctions', function (message) {
-            const payload = JSON.parse(message.body);
+    stompClient.subscribe('/topic/auctions', function (message) {
+      const payload = JSON.parse(message.body);
             console.log('Received auction update:', payload);
             if (payload.type === 'BID_UPDATE' || payload.type === 'NEW_BID') {
                 // Add to landing preview for visitors
@@ -291,7 +298,7 @@ function connect() {
                     addBidToLandingPreview(payload.data);
                 } else {
                     // Add to app view for authenticated users
-                    addBidToSharedFeed(payload.data);
+                addBidToSharedFeed(payload.data);
                 }
                 updateAuctionDisplay(payload.data);
                 updateStats();
@@ -315,14 +322,14 @@ function connect() {
         setStatus(false);
         // Retry connection after 5 seconds
         setTimeout(connect, 5000);
-    });
+  });
 }
 
 function disconnect() {
     if (stompClient) {
         stompClient.disconnect();
     }
-    setStatus(false);
+  setStatus(false);
 }
 
 // API Functions
@@ -340,37 +347,37 @@ async function loadAuctions() {
 }
 
 function displayAuctions(auctions) {
-    const container = document.getElementById('auctions');
+  const container = document.getElementById('auctions');
     if (!container) return;
     
-    container.innerHTML = '';
+  container.innerHTML = '';
     
-    auctions.forEach(auction => {
-        const div = document.createElement('div');
+  auctions.forEach(auction => {
+    const div = document.createElement('div');
         div.className = 'auction-item fade-in';
-        div.innerHTML = `
-            <h3>${auction.name}</h3>
-            <p class="meta">${auction.description || ''}</p>
+    div.innerHTML = `
+      <h3>${auction.name}</h3>
+      <p class="meta">${auction.description || ''}</p>
             <div class="price">$${auction.currentHighestBid.toFixed(2)}</div>
             <div class="time">Ends: ${new Date(auction.endTime).toLocaleString()}</div>
-            <div class="row">
+      <div class="row">
                 <button class="btn btn-outline btn-sm" onclick="loadBids(${auction.id})">
                     <i class="fas fa-eye"></i>
                     View Bids
                 </button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
+      </div>
+    `;
+    container.appendChild(div);
+  });
 }
 
 function populateItemSelect(auctions) {
-    const select = document.getElementById('itemSelect');
+  const select = document.getElementById('itemSelect');
     if (!select) return;
     
     select.innerHTML = '<option value="">Choose an item...</option>';
-    auctions.forEach(a => {
-        const opt = document.createElement('option');
+  auctions.forEach(a => {
+    const opt = document.createElement('option');
         opt.value = a.id;
         opt.textContent = a.name;
         select.appendChild(opt);
@@ -385,8 +392,8 @@ async function placeBid() {
         return;
     }
     
-    const itemId = document.getElementById('itemSelect').value;
-    const amount = document.getElementById('bidAmount').value;
+  const itemId = document.getElementById('itemSelect').value;
+  const amount = document.getElementById('bidAmount').value;
     
     if (!itemId || !amount) {
         showToast('Please select an item and enter a bid amount', 'warning');
@@ -430,7 +437,7 @@ async function loadBids(itemId) {
         return;
     }
     
-    currentItemId = parseInt(itemId);
+  currentItemId = parseInt(itemId);
     try {
         const response = await fetch(`/api/bids/item/${itemId}`);
         const bids = await response.json();
@@ -442,11 +449,11 @@ async function loadBids(itemId) {
 }
 
 function displayBids(bids) {
-    const container = document.getElementById('bids');
+  const container = document.getElementById('bids');
     if (!container) return;
     
-    container.innerHTML = '';
-    bids.forEach(bid => addBidToHtml(container, bid, false));
+  container.innerHTML = '';
+  bids.forEach(bid => addBidToHtml(container, bid, false));
 }
 
 async function loadAllRecentBids() {
@@ -472,9 +479,9 @@ async function loadAllRecentBids() {
 }
 
 function addBidToHtml(container, bid, prepend = true) {
-    const div = document.createElement('div');
-    div.className = 'bid-item' + (bid.isWinning ? ' winning-bid' : '');
-    div.innerHTML = `
+  const div = document.createElement('div');
+  div.className = 'bid-item' + (bid.isWinning ? ' winning-bid' : '');
+  div.innerHTML = `
         <div>
             <div class="bid-amount">$${bid.amount.toFixed(2)}</div>
             <div class="bid-bidder">by ${bid.bidderName}</div>
@@ -491,9 +498,9 @@ function addBidToHtml(container, bid, prepend = true) {
 }
 
 function addBidToSharedFeed(bid) {
-    const container = document.getElementById('bids');
+  const container = document.getElementById('bids');
     if (!container) return;
-    addBidToHtml(container, bid, true);
+  addBidToHtml(container, bid, true);
 }
 
 function updateAuctionDisplay(bid) {
@@ -711,8 +718,8 @@ function getRelativeTime(timestamp) {
 
 // Admin Dashboard Functions
 function loadAdminData() {
-    refreshUsers();
-    refreshAdminStats();
+    // Load overview by default
+    loadOverviewStats();
 }
 
 async function refreshUsers() {
@@ -849,9 +856,6 @@ async function toggleUserStatus(userId, currentStatus) {
 }
 
 async function refreshAdminStats() {
-    const container = document.getElementById('adminStatsGrid');
-    if (!container) return;
-    
     try {
         const response = await fetch('/api/admin/stats', {
             headers: {
@@ -864,15 +868,15 @@ async function refreshAdminStats() {
         }
         
         const stats = await response.json();
-        displayAdminStats(stats);
+        return stats;
     } catch (error) {
         console.error('Error loading stats:', error);
-        container.innerHTML = '<p class="text-danger">Failed to load statistics.</p>';
+        return null;
     }
 }
 
-function displayAdminStats(stats) {
-    const container = document.getElementById('adminStatsGrid');
+function displayAdminStats(stats, containerId = 'adminStatsGrid') {
+    const container = document.getElementById(containerId);
     if (!container) return;
     
     container.innerHTML = `
@@ -924,34 +928,120 @@ function displayAdminStats(stats) {
     `;
 }
 
-function showAdminTab(tabName) {
-    // Hide all tab contents
-    document.querySelectorAll('.admin-tab-content').forEach(tab => {
-        tab.style.display = 'none';
+function showAdminSection(sectionName) {
+    // Hide all sections
+    document.querySelectorAll('.admin-section').forEach(section => {
+        section.classList.remove('active');
     });
     
-    // Remove active class from all tabs
-    document.querySelectorAll('.admin-tab').forEach(tab => {
-        tab.classList.remove('active');
+    // Remove active class from all nav items
+    document.querySelectorAll('.admin-nav-item').forEach(item => {
+        item.classList.remove('active');
     });
     
-    // Show selected tab content
-    const tabContent = document.getElementById(`adminTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
-    if (tabContent) {
-        tabContent.style.display = 'block';
+    // Show selected section
+    const section = document.getElementById(`adminSection${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)}`);
+    if (section) {
+        section.classList.add('active');
     }
     
-    // Add active class to selected tab
-    event.target.closest('.admin-tab').classList.add('active');
+    // Add active class to selected nav item
+    event.target.closest('.admin-nav-item').classList.add('active');
     
-    // Load data for the selected tab
-    if (tabName === 'users') {
+    // Load data for the selected section
+    if (sectionName === 'overview') {
+        loadOverviewStats();
+    } else if (sectionName === 'users') {
         refreshUsers();
-    } else if (tabName === 'analytics') {
-        refreshAdminStats();
-    } else if (tabName === 'auctions') {
-        loadAuctions(); // Reuse existing function
+    } else if (sectionName === 'analytics') {
+        loadAnalyticsStats();
+    } else if (sectionName === 'auctions') {
+        loadAdminAuctions();
+    } else if (sectionName === 'activity') {
+        loadAdminActivity();
     }
+}
+
+function loadOverviewStats() {
+    refreshAdminStats().then(stats => {
+        if (stats) {
+            displayAdminStats(stats, 'overviewStatsGrid');
+        }
+    });
+}
+
+function loadAnalyticsStats() {
+    refreshAdminStats().then(stats => {
+        if (stats) {
+            displayAdminStats(stats, 'analyticsStatsGrid');
+        }
+    });
+}
+
+function loadAdminAuctions() {
+    const container = document.getElementById('adminAuctionsView');
+    if (!container) return;
+    
+    // Reuse existing loadAuctions and display in admin view
+    fetch('/api/items')
+        .then(response => response.json())
+        .then(items => {
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p>No auctions available</p>';
+                return;
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="stat-card">
+                    <h4>${item.name}</h4>
+                    <p>${item.description}</p>
+                    <div style="margin-top: 1rem;">
+                        <strong>Current Bid:</strong> $${item.currentPrice || item.startingPrice}
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error loading auctions:', error);
+            container.innerHTML = '<p>Failed to load auctions</p>';
+        });
+}
+
+function loadAdminActivity() {
+    const container = document.getElementById('adminLiveFeed');
+    if (!container) return;
+    
+    // Fetch recent bids
+    fetch('/api/bids')
+        .then(response => response.json())
+        .then(bids => {
+            if (!bids || bids.length === 0) {
+                container.innerHTML = '<p>No recent activity</p>';
+                return;
+            }
+            
+            // Show last 20 bids
+            const recentBids = bids.slice(-20).reverse();
+            container.innerHTML = recentBids.map(bid => {
+                const itemName = bid.itemName || `Item #${bid.itemId}`;
+                return `
+                    <div class="bid-item">
+                        <div class="bid-item-header">
+                            <span class="bid-item-name">${itemName}</span>
+                            <span class="bid-item-time">${getRelativeTime(bid.timestamp)}</span>
+                        </div>
+                        <div class="bid-item-details">
+                            <strong>$${bid.amount.toFixed(2)}</strong>
+                            <span style="color: var(--text-muted)">by ${bid.bidderName}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        })
+        .catch(error => {
+            console.error('Error loading activity:', error);
+            container.innerHTML = '<p>Failed to load activity</p>';
+        });
 }
 
 // Export functions for global access
@@ -959,7 +1049,7 @@ window.placeBid = placeBid;
 window.loadBids = loadBids;
 window.showModal = showModal;
 window.closeModal = closeModal;
-window.showAdminTab = showAdminTab;
+window.showAdminSection = showAdminSection;
 window.refreshUsers = refreshUsers;
 window.refreshAdminStats = refreshAdminStats;
 window.editUserRole = editUserRole;
