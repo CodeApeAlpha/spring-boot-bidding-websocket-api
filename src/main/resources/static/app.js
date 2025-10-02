@@ -735,9 +735,21 @@ function loadAdminData() {
     loadOverviewStats();
 }
 
+// Users data storage
+let usersData = {
+    users: [],
+    searchTerm: '',
+    roleFilter: 'all',
+    statusFilter: 'all',
+    sortBy: 'username'
+};
+
 async function refreshUsers() {
     const container = document.getElementById('usersTable');
     if (!container) return;
+    
+    // Show loading state
+    container.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
     
     try {
         const response = await fetch('/api/admin/users', {
@@ -751,20 +763,142 @@ async function refreshUsers() {
         }
         
         const users = await response.json();
-        displayUsersTable(users);
+        
+        if (!users || users.length === 0) {
+            container.innerHTML = `
+                <div class="admin-empty-state">
+                    <i class="fas fa-users"></i>
+                    <h3>No Users Yet</h3>
+                    <p>User accounts will appear here once they register.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Store users
+        usersData.users = users;
+        
+        // Setup event listeners
+        setupUserControls();
+        
+        // Display users
+        displayUsersTable();
     } catch (error) {
         console.error('Error loading users:', error);
-        container.innerHTML = '<p class="text-danger">Failed to load users. ' + error.message + '</p>';
+        container.innerHTML = `
+            <div class="admin-error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to Load Users</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="refreshUsers()">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>
+        `;
     }
 }
 
-function displayUsersTable(users) {
+function setupUserControls() {
+    // Search
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput && !searchInput.dataset.initialized) {
+        searchInput.dataset.initialized = 'true';
+        searchInput.addEventListener('input', (e) => {
+            usersData.searchTerm = e.target.value.toLowerCase();
+            displayUsersTable();
+        });
+    }
+    
+    // Role filter
+    const roleFilter = document.getElementById('userRoleFilter');
+    if (roleFilter && !roleFilter.dataset.initialized) {
+        roleFilter.dataset.initialized = 'true';
+        roleFilter.addEventListener('change', (e) => {
+            usersData.roleFilter = e.target.value;
+            displayUsersTable();
+        });
+    }
+    
+    // Status filter
+    const statusFilter = document.getElementById('userStatusFilter');
+    if (statusFilter && !statusFilter.dataset.initialized) {
+        statusFilter.dataset.initialized = 'true';
+        statusFilter.addEventListener('change', (e) => {
+            usersData.statusFilter = e.target.value;
+            displayUsersTable();
+        });
+    }
+    
+    // Sort
+    const sortSelect = document.getElementById('userSort');
+    if (sortSelect && !sortSelect.dataset.initialized) {
+        sortSelect.dataset.initialized = 'true';
+        sortSelect.addEventListener('change', (e) => {
+            usersData.sortBy = e.target.value;
+            displayUsersTable();
+        });
+    }
+}
+
+function displayUsersTable() {
     const container = document.getElementById('usersTable');
-    if (!container || !users || users.length === 0) {
-        container.innerHTML = '<p>No users found.</p>';
+    if (!container) return;
+    
+    let filtered = [...usersData.users];
+    
+    // Apply search filter
+    if (usersData.searchTerm) {
+        filtered = filtered.filter(user => 
+            user.username.toLowerCase().includes(usersData.searchTerm) ||
+            user.email.toLowerCase().includes(usersData.searchTerm) ||
+            `${user.firstName} ${user.lastName}`.toLowerCase().includes(usersData.searchTerm)
+        );
+    }
+    
+    // Apply role filter
+    if (usersData.roleFilter !== 'all') {
+        filtered = filtered.filter(user => user.role === usersData.roleFilter);
+    }
+    
+    // Apply status filter
+    if (usersData.statusFilter === 'active') {
+        filtered = filtered.filter(user => user.enabled === true);
+    } else if (usersData.statusFilter === 'inactive') {
+        filtered = filtered.filter(user => user.enabled === false);
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+        switch (usersData.sortBy) {
+            case 'username':
+                return a.username.localeCompare(b.username);
+            case 'email':
+                return a.email.localeCompare(b.email);
+            case 'role':
+                return a.role.localeCompare(b.role);
+            case 'newest':
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            default:
+                return 0;
+        }
+    });
+    
+    // Update results info
+    updateUsersResultsInfo(filtered.length, usersData.users.length);
+    
+    // Check if empty after filtering
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="admin-empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No Users Found</h3>
+                <p>Try adjusting your search or filter criteria.</p>
+            </div>
+        `;
         return;
     }
     
+    // Render table
     const table = `
         <table class="admin-table">
             <thead>
@@ -780,7 +914,7 @@ function displayUsersTable(users) {
                 </tr>
             </thead>
             <tbody>
-                ${users.map(user => `
+                ${filtered.map(user => `
                     <tr>
                         <td>${user.id}</td>
                         <td><strong>${user.username}</strong></td>
@@ -808,6 +942,17 @@ function displayUsersTable(users) {
     `;
     
     container.innerHTML = table;
+}
+
+function updateUsersResultsInfo(showing, total) {
+    const infoElement = document.getElementById('usersResultsInfo');
+    if (!infoElement) return;
+    
+    if (showing === total) {
+        infoElement.innerHTML = `<span>Showing <strong>${total}</strong> ${total === 1 ? 'user' : 'users'}</span>`;
+    } else {
+        infoElement.innerHTML = `<span>Showing <strong>${showing}</strong> of <strong>${total}</strong> users</span>`;
+    }
 }
 
 async function editUserRole(userId, currentRole) {

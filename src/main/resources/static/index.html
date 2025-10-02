@@ -571,6 +571,37 @@
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
                         </div>
+                        
+                        <!-- User Management Controls -->
+                        <div class="admin-users-controls">
+                            <div class="admin-search-bar">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="userSearch" placeholder="Search by username or email..." />
+                            </div>
+                            <div class="admin-filter-bar">
+                                <select id="userRoleFilter" class="admin-select">
+                                    <option value="all">All Roles</option>
+                                    <option value="ADMIN">Admins Only</option>
+                                    <option value="SELLER">Sellers Only</option>
+                                    <option value="BUYER">Buyers Only</option>
+                                </select>
+                                <select id="userStatusFilter" class="admin-select">
+                                    <option value="all">All Status</option>
+                                    <option value="active">Active Only</option>
+                                    <option value="inactive">Inactive Only</option>
+                                </select>
+                                <select id="userSort" class="admin-select">
+                                    <option value="username">Username (A-Z)</option>
+                                    <option value="email">Email (A-Z)</option>
+                                    <option value="role">Role</option>
+                                    <option value="newest">Newest First</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Info -->
+                        <div id="usersResultsInfo" class="admin-results-info"></div>
+                        
                         <div id="usersTable" class="admin-table-container">
                             <p>Loading users...</p>
                         </div>

@@ -1297,7 +1297,8 @@ body.app-mode .navbar {
 }
 
 /* Admin Auctions Controls */
-.admin-auctions-controls {
+.admin-auctions-controls,
+.admin-users-controls {
   display: flex;
   flex-direction: column;
   gap: 1rem;
