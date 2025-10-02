@@ -537,6 +537,64 @@
 
             <!-- Main Content Area -->
             <section class="main-content">
+                <!-- Admin Dashboard (Only for ADMIN role) -->
+                <div id="adminDashboard" class="admin-dashboard" style="display: none;">
+                    <!-- Admin Header -->
+                    <div class="admin-header">
+                        <h2><i class="fas fa-user-shield"></i> Admin Dashboard</h2>
+                        <p>Manage users, monitor platform activity, and system analytics</p>
+                    </div>
+
+                    <!-- Admin Tabs -->
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" onclick="showAdminTab('users')">
+                            <i class="fas fa-users"></i> User Management
+                        </button>
+                        <button class="admin-tab" onclick="showAdminTab('analytics')">
+                            <i class="fas fa-chart-line"></i> Platform Analytics
+                        </button>
+                        <button class="admin-tab" onclick="showAdminTab('auctions')">
+                            <i class="fas fa-gavel"></i> Auctions Overview
+                        </button>
+                    </div>
+
+                    <!-- User Management Tab -->
+                    <div id="adminTabUsers" class="admin-tab-content">
+                        <div class="admin-section-header">
+                            <h3>Registered Users</h3>
+                            <button class="btn btn-outline btn-sm" onclick="refreshUsers()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="usersTable" class="admin-table-container">
+                            <p>Loading users...</p>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div id="adminTabAnalytics" class="admin-tab-content" style="display: none;">
+                        <div class="admin-section-header">
+                            <h3>Platform Statistics</h3>
+                            <button class="btn btn-outline btn-sm" onclick="refreshAdminStats()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="adminStatsGrid" class="admin-stats-grid">
+                            <p>Loading statistics...</p>
+                        </div>
+                    </div>
+
+                    <!-- Auctions Overview Tab -->
+                    <div id="adminTabAuctions" class="admin-tab-content" style="display: none;">
+                        <div class="admin-section-header">
+                            <h3>Auctions Monitoring</h3>
+                        </div>
+                        <div id="adminAuctionsView" class="admin-auctions-view">
+                            <p>Auction monitoring view</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Cards -->
                 <div id="statsSection" class="stats-grid">
                     <div class="stat-card">

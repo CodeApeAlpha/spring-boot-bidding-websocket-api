@@ -75,6 +75,8 @@ public class SecurityConfig {
                     // Bids viewing is public; placing bids requires auth
                     .requestMatchers(HttpMethod.GET, "/api/bids/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/bids", "/api/bids/**").authenticated()
+                    // Admin endpoints - requires ADMIN role
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     // Everything else requires auth
                     .anyRequest().authenticated()
             );

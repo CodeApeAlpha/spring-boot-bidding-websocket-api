@@ -144,15 +144,20 @@ function setAuthenticatedUser(user, token) {
         showToast('Welcome Seller! You can manage your auction items here.', 'info');
         
     } else if (user.role === 'ADMIN') {
-        // ADMIN: Show stats and user management view
+        // ADMIN: Show admin dashboard
         placeBidSection.style.display = 'none';
-        liveBidsSection.style.display = 'block';
-        statsSection.style.display = 'grid';
-        auctionsSection.style.display = 'block';
+        liveBidsSection.style.display = 'none';
+        statsSection.style.display = 'none';
+        auctionsSection.style.display = 'none';
         
-        showToast('Welcome Admin! System monitoring and user management access.', 'info');
+        // Show admin dashboard
+        const adminDashboard = document.getElementById('adminDashboard');
+        if (adminDashboard) {
+            adminDashboard.style.display = 'block';
+            loadAdminData();
+        }
         
-        loadAllRecentBids();
+        showToast('Welcome Admin! Full system management access.', 'info');
     }
     
     // Load auction data
@@ -704,8 +709,258 @@ function getRelativeTime(timestamp) {
     }
 }
 
+// Admin Dashboard Functions
+function loadAdminData() {
+    refreshUsers();
+    refreshAdminStats();
+}
+
+async function refreshUsers() {
+    const container = document.getElementById('usersTable');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load users');
+        }
+        
+        const users = await response.json();
+        displayUsersTable(users);
+    } catch (error) {
+        console.error('Error loading users:', error);
+        container.innerHTML = '<p class="text-danger">Failed to load users. ' + error.message + '</p>';
+    }
+}
+
+function displayUsersTable(users) {
+    const container = document.getElementById('usersTable');
+    if (!container || !users || users.length === 0) {
+        container.innerHTML = '<p>No users found.</p>';
+        return;
+    }
+    
+    const table = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td><strong>${user.username}</strong></td>
+                        <td>${user.firstName} ${user.lastName}</td>
+                        <td>${user.email}</td>
+                        <td><span class="user-role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
+                        <td><span class="user-status ${user.enabled ? 'active' : 'disabled'}">
+                            ${user.enabled ? '✓ Active' : '✗ Disabled'}
+                        </span></td>
+                        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="btn-admin-action btn-edit" onclick="editUserRole(${user.id}, '${user.role}')" title="Change Role">
+                                    <i class="fas fa-user-tag"></i>
+                                </button>
+                                <button class="btn-admin-action btn-toggle" onclick="toggleUserStatus(${user.id}, ${user.enabled})" title="Toggle Status">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    container.innerHTML = table;
+}
+
+async function editUserRole(userId, currentRole) {
+    const roles = ['BUYER', 'SELLER', 'ADMIN'];
+    const roleOptions = roles.map(r => `${r === currentRole ? '➤ ' : ''}${r}`).join('\n');
+    
+    const newRole = prompt(`Change user role:\n\n${roleOptions}\n\nEnter new role (BUYER, SELLER, or ADMIN):`, currentRole);
+    
+    if (!newRole || newRole.toUpperCase() === currentRole) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ role: newRole.toUpperCase() })
+        });
+        
+        if (response.ok) {
+            showToast('User role updated successfully!', 'success');
+            refreshUsers();
+        } else {
+            showToast('Failed to update user role', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating user role:', error);
+        showToast('Error updating user role', 'error');
+    }
+}
+
+async function toggleUserStatus(userId, currentStatus) {
+    const action = currentStatus ? 'disable' : 'enable';
+    if (!confirm(`Are you sure you want to ${action} this user?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/toggle-status`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast(`User ${action}d successfully!`, 'success');
+            refreshUsers();
+        } else {
+            showToast(`Failed to ${action} user`, 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling user status:', error);
+        showToast('Error toggling user status', 'error');
+    }
+}
+
+async function refreshAdminStats() {
+    const container = document.getElementById('adminStatsGrid');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/admin/stats', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load statistics');
+        }
+        
+        const stats = await response.json();
+        displayAdminStats(stats);
+    } catch (error) {
+        console.error('Error loading stats:', error);
+        container.innerHTML = '<p class="text-danger">Failed to load statistics.</p>';
+    }
+}
+
+function displayAdminStats(stats) {
+    const container = document.getElementById('adminStatsGrid');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-users"></i> Total Users</h4>
+            <div class="stat-value">${stats.totalUsers}</div>
+            <div class="stat-label">Registered accounts</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-shopping-cart"></i> Buyers</h4>
+            <div class="stat-value">${stats.buyerCount}</div>
+            <div class="stat-label">Active bidders</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-store"></i> Sellers</h4>
+            <div class="stat-value">${stats.sellerCount}</div>
+            <div class="stat-label">Item creators</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-user-shield"></i> Admins</h4>
+            <div class="stat-value">${stats.adminCount}</div>
+            <div class="stat-label">System administrators</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-check-circle"></i> Active Users</h4>
+            <div class="stat-value">${stats.activeUsers}</div>
+            <div class="stat-label">Enabled accounts</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-ban"></i> Disabled Users</h4>
+            <div class="stat-value">${stats.disabledUsers}</div>
+            <div class="stat-label">Inactive accounts</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-box"></i> Total Auctions</h4>
+            <div class="stat-value">${stats.totalAuctions}</div>
+            <div class="stat-label">All time items</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-fire"></i> Active Auctions</h4>
+            <div class="stat-value">${stats.activeAuctions}</div>
+            <div class="stat-label">Currently bidding</div>
+        </div>
+        <div class="admin-stat-card">
+            <h4><i class="fas fa-gavel"></i> Total Bids</h4>
+            <div class="stat-value">${stats.totalBids}</div>
+            <div class="stat-label">Platform-wide</div>
+        </div>
+    `;
+}
+
+function showAdminTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.admin-tab-content').forEach(tab => {
+        tab.style.display = 'none';
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const tabContent = document.getElementById(`adminTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+    if (tabContent) {
+        tabContent.style.display = 'block';
+    }
+    
+    // Add active class to selected tab
+    event.target.closest('.admin-tab').classList.add('active');
+    
+    // Load data for the selected tab
+    if (tabName === 'users') {
+        refreshUsers();
+    } else if (tabName === 'analytics') {
+        refreshAdminStats();
+    } else if (tabName === 'auctions') {
+        loadAuctions(); // Reuse existing function
+    }
+}
+
 // Export functions for global access
 window.placeBid = placeBid;
 window.loadBids = loadBids;
 window.showModal = showModal;
 window.closeModal = closeModal;
+window.showAdminTab = showAdminTab;
+window.refreshUsers = refreshUsers;
+window.refreshAdminStats = refreshAdminStats;
+window.editUserRole = editUserRole;
+window.toggleUserStatus = toggleUserStatus;
