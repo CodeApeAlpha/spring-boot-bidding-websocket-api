@@ -190,6 +190,38 @@
             </div>
         </section>
 
+        <!-- Live Bids Preview Section -->
+        <section id="live-bids-preview" class="live-preview">
+            <div class="container">
+                <div class="live-preview-header">
+                    <h2 class="section-title">
+                        <span class="live-pulse-dot"></span>
+                        Live Auction Activity
+                    </h2>
+                    <div class="live-status-badge">
+                        <i class="fas fa-circle"></i>
+                        <span id="activeBidders">3 people</span> bidding now
+                    </div>
+                </div>
+                <p class="section-subtitle">Watch real-time bids from our active auction community</p>
+                
+                <div id="liveBidsPreviewContainer" class="live-bids-ticker">
+                    <!-- Dynamic bids will be inserted here -->
+                    <div class="preview-bid-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Connecting to live feed...</p>
+                    </div>
+                </div>
+                
+                <div class="live-preview-cta">
+                    <p>See something you like?</p>
+                    <button class="btn-primary btn-large" onclick="showModal('registerModal')">
+                        <i class="fas fa-rocket"></i> Join the Action
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <!-- Features Section -->
         <section id="features" class="features">
             <div class="container">

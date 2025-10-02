@@ -281,7 +281,13 @@ function connect() {
             const payload = JSON.parse(message.body);
             console.log('Received auction update:', payload);
             if (payload.type === 'BID_UPDATE' || payload.type === 'NEW_BID') {
-                addBidToSharedFeed(payload.data);
+                // Add to landing preview for visitors
+                if (!currentUser) {
+                    addBidToLandingPreview(payload.data);
+                } else {
+                    // Add to app view for authenticated users
+                    addBidToSharedFeed(payload.data);
+                }
                 updateAuctionDisplay(payload.data);
                 updateStats();
             } else if (payload.type === 'AUCTION_UPDATE') {
@@ -289,11 +295,15 @@ function connect() {
             }
         });
 
-        // Load auctions if authenticated
+        // Load initial data
         if (currentUser) {
+            // Authenticated users
             loadAuctions();
             updateStats();
             loadAllRecentBids();
+        } else {
+            // Visitors - load preview bids
+            loadPreviewBids();
         }
     }, function(error) {
         console.error('STOMP error: ' + error);
@@ -570,6 +580,128 @@ function getToastIcon(type) {
         info: 'fas fa-info-circle'
     };
     return icons[type] || icons.info;
+}
+
+// Live Bids Preview Functions (for visitors)
+async function loadPreviewBids() {
+    const container = document.getElementById('liveBidsPreviewContainer');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/bids');
+        const bids = await response.json();
+        
+        // Remove placeholder
+        container.innerHTML = '';
+        
+        // Sort by timestamp descending (newest first) and take last 6
+        bids.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const recentBids = bids.slice(0, 6);
+        
+        if (recentBids.length === 0) {
+            container.innerHTML = `
+                <div class="preview-bid-placeholder">
+                    <i class="fas fa-gavel"></i>
+                    <p>Be the first to bid today!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        recentBids.forEach(bid => {
+            const bidElement = createPreviewBidElement(bid, false);
+            container.appendChild(bidElement);
+        });
+    } catch (error) {
+        console.error('Error loading preview bids:', error);
+        container.innerHTML = `
+            <div class="preview-bid-placeholder">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Unable to load bids. Reconnecting...</p>
+            </div>
+        `;
+    }
+}
+
+function addBidToLandingPreview(bid) {
+    const container = document.getElementById('liveBidsPreviewContainer');
+    if (!container) return;
+    
+    // Remove placeholder if exists
+    const placeholder = container.querySelector('.preview-bid-placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+    
+    // Create and add new bid element
+    const bidElement = createPreviewBidElement(bid, true);
+    container.insertBefore(bidElement, container.firstChild);
+    
+    // Keep only last 6 bids
+    const allBids = container.querySelectorAll('.preview-bid-item');
+    if (allBids.length > 6) {
+        allBids[allBids.length - 1].remove();
+    }
+    
+    // Remove 'new' badge after 3 seconds
+    setTimeout(() => {
+        bidElement.classList.remove('preview-bid-new');
+    }, 3000);
+}
+
+function createPreviewBidElement(bid, isNew) {
+    const div = document.createElement('div');
+    div.className = 'preview-bid-item' + (isNew ? ' preview-bid-new' : '');
+    
+    // Get item name (if available) or use item ID
+    const itemName = bid.itemName || `Auction Item #${bid.itemId}`;
+    
+    div.innerHTML = `
+        <div class="preview-bid-header">
+            ${isNew ? '<span class="preview-bid-badge">🔴 NEW BID</span>' : '<span class="preview-bid-badge">BID</span>'}
+            <span class="preview-bid-time">${getRelativeTime(bid.timestamp)}</span>
+        </div>
+        <div class="preview-bid-content">
+            <div class="preview-bid-item-name">${itemName}</div>
+            <div class="preview-bid-amount">$${bid.amount.toFixed(2)}</div>
+            <div class="preview-bid-bidder">by ${anonymizeBidder(bid.bidderName)}</div>
+        </div>
+    `;
+    
+    return div;
+}
+
+function anonymizeBidder(fullName) {
+    if (!fullName) return 'Anonymous';
+    
+    const parts = fullName.trim().split(' ');
+    if (parts.length > 1) {
+        // "John Doe" -> "John D."
+        return `${parts[0]} ${parts[1].charAt(0)}.`;
+    }
+    // Single name
+    return parts[0];
+}
+
+function getRelativeTime(timestamp) {
+    const now = new Date();
+    const bidTime = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - bidTime) / 1000);
+    
+    if (diffInSeconds < 10) {
+        return 'just now';
+    } else if (diffInSeconds < 60) {
+        return `${diffInSeconds} seconds ago`;
+    } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
 }
 
 // Export functions for global access
