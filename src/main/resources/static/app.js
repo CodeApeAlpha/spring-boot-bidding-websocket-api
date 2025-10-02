@@ -323,8 +323,8 @@ function connect() {
         // Load initial data
         if (currentUser) {
             // Authenticated users
-            loadAuctions();
-            updateStats();
+        loadAuctions();
+        updateStats();
             loadAllRecentBids();
         } else {
             // Visitors - load preview bids
@@ -1132,6 +1132,10 @@ function displayAuctions() {
         filtered = filtered.filter(item => item.active !== false);
     } else if (auctionsData.filter === 'inactive') {
         filtered = filtered.filter(item => item.active === false);
+    } else if (auctionsData.filter === 'no-bids') {
+        filtered = filtered.filter(item => (auctionsData.bidCounts[item.id] || 0) === 0);
+    } else if (auctionsData.filter === 'with-bids') {
+        filtered = filtered.filter(item => (auctionsData.bidCounts[item.id] || 0) > 0);
     }
     
     // Apply sorting
