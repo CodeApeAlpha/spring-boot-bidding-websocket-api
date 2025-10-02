@@ -938,6 +938,14 @@ body::before {
 }
 
 /* ===== Admin Dashboard Styles ===== */
+
+/* Darker navbar for admin mode */
+body.app-mode .navbar {
+  background: linear-gradient(135deg, rgba(26, 32, 44, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 .admin-dashboard-wrapper {
   width: 100%;
   height: 100%;
