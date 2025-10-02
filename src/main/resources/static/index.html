@@ -114,8 +114,8 @@
                 <!-- Auth Section (Not logged in) -->
                 <div id="authSection" class="auth-section">
                     <button id="loginBtn" class="btn-secondary">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
                     <button id="registerBtn" class="btn-primary">
                         <i class="fas fa-user-plus"></i> Register
                     </button>
@@ -142,79 +142,107 @@
 
     <!-- LANDING PAGE VIEW (Shown when not authenticated) -->
     <div id="landingView" class="landing-view">
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>Experience Real-Time Bidding</h1>
-                    <p class="hero-subtitle">Join BidHub, the next-generation auction platform with live updates, secure transactions, and seamless bidding experience.</p>
-                    <div class="hero-buttons">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Experience Real-Time Bidding</h1>
+                <p class="hero-subtitle">Join BidHub, the next-generation auction platform with live updates, secure transactions, and seamless bidding experience.</p>
+                <div class="hero-buttons">
                         <button class="btn-primary btn-large" onclick="showModal('registerModal')">
-                            <i class="fas fa-rocket"></i> Get Started
-                        </button>
-                        <button class="btn-outline btn-large" onclick="scrollToSection('features')">
-                            <i class="fas fa-info-circle"></i> Learn More
-                        </button>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat">
-                            <i class="fas fa-users"></i>
-                            <span class="stat-number">10,000+</span>
-                            <span class="stat-label">Active Users</span>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-gavel"></i>
-                            <span class="stat-number">50,000+</span>
-                            <span class="stat-label">Successful Bids</span>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-bolt"></i>
-                            <span class="stat-number">Real-Time</span>
-                            <span class="stat-label">Live Updates</span>
-                        </div>
-                    </div>
+                        <i class="fas fa-rocket"></i> Get Started
+                    </button>
+                    <button class="btn-outline btn-large" onclick="scrollToSection('features')">
+                        <i class="fas fa-info-circle"></i> Learn More
+                    </button>
                 </div>
-                <div class="hero-illustration">
-                    <div class="auction-card floating">
-                        <div class="auction-icon">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <h3>Live Auction</h3>
-                        <div class="price-display">$12,500</div>
-                        <div class="bid-indicator">
-                            <span class="pulse-dot"></span>
-                            <span>3 active bids</span>
-                        </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <i class="fas fa-users"></i>
+                        <span class="stat-number">10,000+</span>
+                        <span class="stat-label">Active Users</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-gavel"></i>
+                        <span class="stat-number">50,000+</span>
+                        <span class="stat-label">Successful Bids</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-bolt"></i>
+                        <span class="stat-number">Real-Time</span>
+                        <span class="stat-label">Live Updates</span>
                     </div>
                 </div>
             </div>
-        </section>
+            <div class="hero-illustration">
+                <div class="auction-card floating">
+                    <div class="auction-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>Live Auction</h3>
+                    <div class="price-display">$12,500</div>
+                    <div class="bid-indicator">
+                        <span class="pulse-dot"></span>
+                        <span>3 active bids</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
         <!-- Live Bids Preview Section -->
         <section id="live-bids-preview" class="live-preview">
+            <!-- Banner Section -->
             <div class="live-preview-banner">
-                <div class="banner-content">
-                    <div class="banner-left">
-                        <h2 class="banner-title">
-                            <span class="live-pulse-dot"></span>
-                            LIVE AUCTION ACTIVITY
-                        </h2>
-                        <p class="banner-subtitle">Real bids happening right now</p>
-                    </div>
-                    <div class="banner-right">
-                        <div class="live-status-badge-large">
-                            <i class="fas fa-circle"></i>
-                            <div class="status-text">
-                                <span class="status-number" id="activeBidders">3</span>
-                                <span class="status-label">BIDDING NOW</span>
+                <div class="container">
+                    <div class="banner-content">
+                        <div class="banner-left">
+                            <span class="live-tag">
+                                <span class="live-pulse-dot"></span>
+                                LIVE
+                            </span>
+                            <h2 class="banner-title">Watch Real-Time Auction Activity</h2>
+                            <p class="banner-subtitle">See what others are bidding on right now</p>
+                        </div>
+                        <div class="banner-right">
+                            <div class="live-stats-card">
+                                <div class="stat-item">
+                                    <i class="fas fa-users"></i>
+                                    <div class="stat-content">
+                                        <span class="stat-number" id="activeBidders">3</span>
+                                        <span class="stat-label">Active Bidders</span>
+                                    </div>
+                                </div>
+                                <div class="stat-divider"></div>
+                                <div class="stat-item">
+                                    <i class="fas fa-gavel"></i>
+                                    <div class="stat-content">
+                                        <span class="stat-number" id="totalLiveBids">12</span>
+                                        <span class="stat-label">Live Bids</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
+            <!-- Recent Bids Showcase -->
             <div class="live-bids-showcase">
                 <div class="container">
+                    <div class="showcase-header">
+                        <div class="header-left">
+                            <h3>Recent Bids</h3>
+                            <p>Updated in real-time</p>
+                        </div>
+                        <div class="header-right">
+                            <div class="live-indicator">
+                                <span class="pulse-ring"></span>
+                                <span class="live-text">LIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div id="liveBidsPreviewContainer" class="live-bids-grid">
                         <!-- Dynamic bids will be inserted here -->
                         <div class="preview-bid-placeholder">
@@ -225,227 +253,244 @@
                 </div>
             </div>
             
+            <!-- CTA Section -->
             <div class="live-preview-cta-section">
-                <div class="cta-content">
-                    <div class="cta-icon">
+                <div class="container">
+                    <div class="cta-container">
+                        <div class="cta-left">
+                            <div class="cta-icon-wrapper">
+                                <div class="cta-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="cta-icon-glow"></div>
+                            </div>
+                        </div>
+                        <div class="cta-center">
+                            <h3>Ready to Join the Action?</h3>
+                            <p>Sign up now and start bidding on exclusive auction items</p>
+                            <ul class="cta-features">
+                                <li><i class="fas fa-check-circle"></i> Real-time bidding</li>
+                                <li><i class="fas fa-check-circle"></i> Secure transactions</li>
+                                <li><i class="fas fa-check-circle"></i> Instant notifications</li>
+                            </ul>
+                        </div>
+                        <div class="cta-right">
+                            <button class="btn-cta-large" onclick="showModal('registerModal')">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Sign Up Free</span>
+                            </button>
+                            <p class="cta-note">No credit card required</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need for a seamless auction experience</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
                         <i class="fas fa-bolt"></i>
                     </div>
-                    <div class="cta-text">
-                        <h3>Don't Miss Out on the Action!</h3>
-                        <p>Join thousands of users winning amazing deals in real-time</p>
+                    <h3>Real-Time Updates</h3>
+                    <p>See bids as they happen with WebSocket technology. Never miss a beat in the auction action.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
                     </div>
-                    <button class="btn-cta-large" onclick="showModal('registerModal')">
-                        <i class="fas fa-rocket"></i> Start Bidding Now
-                    </button>
+                    <h3>Secure Authentication</h3>
+                    <p>JWT-based security ensures your account and transactions are protected at all times.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Live Analytics</h3>
+                    <p>Track auction performance with real-time statistics and bidding insights.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Responsive Design</h3>
+                    <p>Bid from anywhere on any device with our fully responsive interface.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Role-Based Access</h3>
+                    <p>Tailored experiences for Buyers, Sellers, and Admins with customized features.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Instant Notifications</h3>
+                    <p>Get notified immediately when you're outbid or when an auction is ending.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Features Section -->
-        <section id="features" class="features">
-            <div class="container">
-                <h2 class="section-title">Powerful Features</h2>
-                <p class="section-subtitle">Everything you need for a seamless auction experience</p>
-                
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <h3>Real-Time Updates</h3>
-                        <p>See bids as they happen with WebSocket technology. Never miss a beat in the auction action.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3>Secure Authentication</h3>
-                        <p>JWT-based security ensures your account and transactions are protected at all times.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3>Live Analytics</h3>
-                        <p>Track auction performance with real-time statistics and bidding insights.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h3>Responsive Design</h3>
-                        <p>Bid from anywhere on any device with our fully responsive interface.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <h3>Role-Based Access</h3>
-                        <p>Tailored experiences for Buyers, Sellers, and Admins with customized features.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <h3>Instant Notifications</h3>
-                        <p>Get notified immediately when you're outbid or when an auction is ending.</p>
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Get started in three simple steps</p>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Your Account</h3>
+                        <p>Sign up as a Buyer to place bids or as a Seller to create auctions. Quick and easy registration.</p>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="how-it-works">
-            <div class="container">
-                <h2 class="section-title">How It Works</h2>
-                <p class="section-subtitle">Get started in three simple steps</p>
-                
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h3>Create Your Account</h3>
-                            <p>Sign up as a Buyer to place bids or as a Seller to create auctions. Quick and easy registration.</p>
-                        </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Browse Auctions</h3>
+                        <p>Explore active auctions, view detailed item information, and monitor real-time bidding activity.</p>
                     </div>
+                </div>
 
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h3>Browse Auctions</h3>
-                            <p>Explore active auctions, view detailed item information, and monitor real-time bidding activity.</p>
-                        </div>
-                    </div>
-
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h3>Start Bidding</h3>
-                            <p>Place your bids and watch the action unfold in real-time. Track your bids and win amazing items!</p>
-                        </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Start Bidding</h3>
+                        <p>Place your bids and watch the action unfold in real-time. Track your bids and win amazing items!</p>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- User Roles Section -->
-        <section id="roles" class="roles">
-            <div class="container">
-                <h2 class="section-title">Choose Your Role</h2>
-                <p class="section-subtitle">Join BidHub with a role that fits your needs</p>
-                
-                <div class="roles-grid">
-                    <div class="role-card">
-                        <div class="role-icon buyer">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h3>Buyer</h3>
-                        <p class="role-description">Place bids on exciting auction items and win great deals</p>
-                        <ul class="role-features">
-                            <li><i class="fas fa-check"></i> Place unlimited bids</li>
-                            <li><i class="fas fa-check"></i> Real-time bid tracking</li>
-                            <li><i class="fas fa-check"></i> Live auction feed</li>
-                            <li><i class="fas fa-check"></i> Instant notifications</li>
-                        </ul>
+    <!-- User Roles Section -->
+    <section id="roles" class="roles">
+        <div class="container">
+            <h2 class="section-title">Choose Your Role</h2>
+            <p class="section-subtitle">Join BidHub with a role that fits your needs</p>
+            
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-icon buyer">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Buyer</h3>
+                    <p class="role-description">Place bids on exciting auction items and win great deals</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check"></i> Place unlimited bids</li>
+                        <li><i class="fas fa-check"></i> Real-time bid tracking</li>
+                        <li><i class="fas fa-check"></i> Live auction feed</li>
+                        <li><i class="fas fa-check"></i> Instant notifications</li>
+                    </ul>
                         <button class="btn-role" onclick="showModal('registerModal')">Join as Buyer</button>
-                    </div>
+                </div>
 
-                    <div class="role-card featured">
-                        <div class="featured-badge">Popular</div>
-                        <div class="role-icon seller">
-                            <i class="fas fa-store"></i>
-                        </div>
-                        <h3>Seller</h3>
-                        <p class="role-description">Create and manage your own auction listings</p>
-                        <ul class="role-features">
-                            <li><i class="fas fa-check"></i> Create auctions (coming soon)</li>
-                            <li><i class="fas fa-check"></i> Manage your listings</li>
-                            <li><i class="fas fa-check"></i> Track performance</li>
-                            <li><i class="fas fa-check"></i> Sales analytics</li>
-                        </ul>
+                <div class="role-card featured">
+                    <div class="featured-badge">Popular</div>
+                    <div class="role-icon seller">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3>Seller</h3>
+                    <p class="role-description">Create and manage your own auction listings</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check"></i> Create auctions (coming soon)</li>
+                        <li><i class="fas fa-check"></i> Manage your listings</li>
+                        <li><i class="fas fa-check"></i> Track performance</li>
+                        <li><i class="fas fa-check"></i> Sales analytics</li>
+                    </ul>
                         <button class="btn-role" onclick="showModal('registerModal')">Join as Seller</button>
-                    </div>
+                </div>
 
-                    <div class="role-card">
-                        <div class="role-icon admin">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <h3>Admin</h3>
-                        <p class="role-description">Manage the platform and oversee all activities</p>
-                        <ul class="role-features">
-                            <li><i class="fas fa-check"></i> User management</li>
-                            <li><i class="fas fa-check"></i> System monitoring</li>
-                            <li><i class="fas fa-check"></i> Full platform access</li>
-                            <li><i class="fas fa-check"></i> Analytics dashboard</li>
-                        </ul>
+                <div class="role-card">
+                    <div class="role-icon admin">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Admin</h3>
+                    <p class="role-description">Manage the platform and oversee all activities</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check"></i> User management</li>
+                        <li><i class="fas fa-check"></i> System monitoring</li>
+                        <li><i class="fas fa-check"></i> Full platform access</li>
+                        <li><i class="fas fa-check"></i> Analytics dashboard</li>
+                    </ul>
                         <button class="btn-role" onclick="showModal('registerModal')">Admin Access</button>
                     </div>
-                </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- CTA Section -->
-        <section class="cta">
-            <div class="container">
-                <h2>Ready to Start Bidding?</h2>
-                <p>Join thousands of users already experiencing the future of online auctions</p>
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Start Bidding?</h2>
+            <p>Join thousands of users already experiencing the future of online auctions</p>
                 <button class="btn-primary btn-large" onclick="showModal('registerModal')">
-                    <i class="fas fa-rocket"></i> Get Started Now
-                </button>
-            </div>
-        </section>
+                <i class="fas fa-rocket"></i> Get Started Now
+            </button>
+        </div>
+    </section>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-section">
-                        <div class="footer-brand">
-                            <i class="fas fa-gavel"></i>
-                            <span>BidHub</span>
-                        </div>
-                        <p>The next-generation real-time auction platform powered by modern technology.</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-gavel"></i>
+                        <span>BidHub</span>
                     </div>
-                    
-                    <div class="footer-section">
-                        <h4>Platform</h4>
-                        <ul>
-                            <li><a href="#features">Features</a></li>
-                            <li><a href="#how-it-works">How It Works</a></li>
-                            <li><a href="#roles">User Roles</a></li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer-section">
-                        <h4>Technology</h4>
-                        <ul>
-                            <li>Spring Boot Backend</li>
-                            <li>WebSocket Real-Time</li>
-                            <li>JWT Authentication</li>
-                            <li>MySQL Database</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer-section">
-                        <h4>Documentation</h4>
-                        <ul>
-                            <li><a href="https://github.com/CodeApeAlpha/spring-boot-bidding-websocket-api" target="_blank">GitHub Repository</a></li>
-                            <li><a href="/swagger-ui.html" target="_blank">API Documentation</a></li>
-                        </ul>
-                    </div>
+                    <p>The next-generation real-time auction platform powered by modern technology.</p>
                 </div>
                 
-                <div class="footer-bottom">
-                    <p>&copy; 2025 BidHub. All rights reserved.</p>
-                    <p>Built with <i class="fas fa-heart"></i> using Spring Boot & WebSocket</p>
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#roles">User Roles</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Technology</h4>
+                    <ul>
+                        <li>Spring Boot Backend</li>
+                        <li>WebSocket Real-Time</li>
+                        <li>JWT Authentication</li>
+                        <li>MySQL Database</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Documentation</h4>
+                    <ul>
+                        <li><a href="https://github.com/CodeApeAlpha/spring-boot-bidding-websocket-api" target="_blank">GitHub Repository</a></li>
+                        <li><a href="/swagger-ui.html" target="_blank">API Documentation</a></li>
+                    </ul>
                 </div>
             </div>
-        </footer>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 BidHub. All rights reserved.</p>
+                <p>Built with <i class="fas fa-heart"></i> using Spring Boot & WebSocket</p>
+            </div>
+        </div>
+    </footer>
     </div>
 
     <!-- APP VIEW (Shown when authenticated) -->
@@ -627,8 +672,8 @@
             const element = document.getElementById(sectionId);
             if (element) {
                 element.scrollIntoView({ 
-                    behavior: 'smooth' 
-                });
+                behavior: 'smooth' 
+            });
             }
         }
 
@@ -650,12 +695,12 @@
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
             if (!document.body.classList.contains('app-mode')) {
-                if (window.scrollY > 50) {
-                    navbar.style.background = 'rgba(26, 32, 44, 0.95)';
-                    navbar.style.backdropFilter = 'blur(10px)';
-                } else {
-                    navbar.style.background = 'rgba(26, 32, 44, 0.8)';
-                    navbar.style.backdropFilter = 'blur(5px)';
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(26, 32, 44, 0.95)';
+                navbar.style.backdropFilter = 'blur(10px)';
+            } else {
+                navbar.style.background = 'rgba(26, 32, 44, 0.8)';
+                navbar.style.backdropFilter = 'blur(5px)';
                 }
             }
         });
