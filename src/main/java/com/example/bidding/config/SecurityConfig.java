@@ -64,20 +64,18 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth ->
                 auth
-                    // Public endpoints
+                    // Public API endpoints
                     .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                    .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/", "/index.html", "/index.css", "/app.html", "/styles.css", "/app.js", "/favicon.ico").permitAll()
-                    .requestMatchers("/websocket-test.html").permitAll()
-                    .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
                     .requestMatchers("/api/items/**").permitAll()
-                    // Bids viewing is public; placing bids requires auth
                     .requestMatchers(HttpMethod.GET, "/api/bids/**").permitAll()
+                    // WebSocket endpoint
+                    .requestMatchers("/ws/**").permitAll()
+                    // API Documentation
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                    // Protected API endpoints
                     .requestMatchers(HttpMethod.POST, "/api/bids", "/api/bids/**").authenticated()
-                    // Admin endpoints - requires ADMIN role
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    // Everything else requires auth
+                    // Everything else requires authentication
                     .anyRequest().authenticated()
             );
         
@@ -90,10 +88,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow Next.js frontend (development and production)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",  // Next.js development
+            "http://localhost:3001",  // Alternative port
+            "https://yourdomain.com"  // Production domain (update this)
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight requests for 1 hour
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
